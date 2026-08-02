@@ -15,4 +15,8 @@ export const config = {
     ssl: process.env.DATABASE_SSL === "true",
     synchronize: process.env.TYPEORM_SYNCHRONIZE !== "false",
   },
+  jwt: {
+    secret: process.env.JWT_SECRET ?? "replace-this-with-a-long-random-secret",
+    expiresIn: process.env.JWT_EXPIRES_IN ?? "1d",
+  },
 };
