@@ -1,8 +1,8 @@
-import type { RequestHandler } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 
 import { AppDataSource } from "../data-source.js";
 import { User } from "../entities/User.js";
-import { UserStatus } from "../entities/enums.js";
+import { UserRole, UserStatus } from "../entities/enums.js";
 import { verifyToken } from "../utils/security.js";
 
 declare module "express-serve-static-core" {
@@ -44,3 +44,21 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
     });
   }
 };
+
+export const authorize =
+  (...roles: UserRole[]) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication is required",
+      });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: "You do not have permission to perform this action",
+      });
+    }
+
+    return next();
+  };
