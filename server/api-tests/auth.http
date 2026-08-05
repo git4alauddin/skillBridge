@@ -44,3 +44,42 @@ Content-Type: application/json
   "password": "Password123",
   "role": "student"
 }
+
+
+### Register fixed login test user
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Login Test Student",
+  "email": "login-test-student@example.com",
+  "password": "Password123",
+  "role": "student"
+}
+
+### Login fixed test user
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "login-test-student@example.com",
+  "password": "Password123"
+}
+
+### Reject wrong password
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "login-test-student@example.com",
+  "password": "WrongPassword123"
+}
+
+### Reject unknown email
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "unknown-login-user@example.com",
+  "password": "Password123"
+}
