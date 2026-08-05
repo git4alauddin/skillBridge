@@ -67,9 +67,11 @@ Content-Type: application/json
   "password": "Password123"
 }
 
+> {% client.global.set("authToken", response.body.token); %}
+
 ### Current user with valid token
 GET http://localhost:4000/api/auth/me
-Authorization: Bearer {{loginFixedTestUser.response.body.token}}
+Authorization: Bearer {{authToken}}
 
 ### Reject missing token
 GET http://localhost:4000/api/auth/me
