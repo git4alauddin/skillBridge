@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AppDataSource } from "../data-source.js";
 import { User } from "../entities/User.js";
 import { UserRole } from "../entities/enums.js";
+import { requireAuth } from "../middleware/auth.js";
 import { hashPassword, signToken, verifyPassword } from "../utils/security.js";
 import { toPublicUser } from "../utils/sanitize.js";
 
@@ -99,5 +100,17 @@ authRouter.post("/api/auth/login", async (req, res) => {
   return res.json({
     token,
     user: toPublicUser(user),
+  });
+});
+
+authRouter.get("/api/auth/me", requireAuth, (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({
+      message: "Authentication token is invalid",
+    });
+  }
+
+  return res.json({
+    user: toPublicUser(req.user),
   });
 });
