@@ -1,0 +1,46 @@
+### Health check
+GET http://localhost:4000/health
+
+### Register student
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Manual Test Student",
+  "email": "manual-test-student-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "student"
+}
+
+### Register mentor
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Manual Test Mentor",
+  "email": "manual-test-mentor-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "mentor"
+}
+
+### Reject admin registration
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Fake Admin",
+  "email": "fake-admin-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "admin"
+}
+
+### Reject duplicate email
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Duplicate Test Student",
+  "email": "duplicate-test-student@example.com",
+  "password": "Password123",
+  "role": "student"
+}

@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import { authRouter } from "./routes/auth.js";
 
 import { config } from "./config.js";
 import { notFoundHandler, errorHandler } from "./middleware/errors.js";
@@ -26,6 +27,7 @@ app.use(
   })
 );
 
+app.use(authRouter);
 app.use(healthRouter);
 
 app.use(notFoundHandler);
