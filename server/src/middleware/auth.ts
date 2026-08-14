@@ -47,6 +47,14 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
 export const authenticate = requireAuth;
 
+export const rolePermissions = {
+  adminOnly: [UserRole.Admin],
+  mentorOnly: [UserRole.Mentor],
+  studentOnly: [UserRole.Student],
+  opportunityManagers: [UserRole.Admin, UserRole.Mentor],
+  authenticatedUsers: [UserRole.Admin, UserRole.Mentor, UserRole.Student],
+} as const;
+
 export const authorize =
   (...roles: UserRole[]) =>
   (req: Request, res: Response, next: NextFunction) => {
