@@ -4,7 +4,12 @@ import { z } from "zod";
 import { AppDataSource } from "../data-source.js";
 import { User } from "../entities/User.js";
 import { UserRole } from "../entities/enums.js";
-import { requireAuth } from "../middleware/auth.js";
+import {
+  authenticate,
+  authorize,
+  requireAuth,
+  rolePermissions,
+} from "../middleware/auth.js";
 import { hashPassword, signToken, verifyPassword } from "../utils/security.js";
 import { toPublicUser } from "../utils/sanitize.js";
 
@@ -114,3 +119,14 @@ authRouter.get("/api/auth/me", requireAuth, (req, res) => {
     user: toPublicUser(req.user),
   });
 });
+
+authRouter.get(
+  "/api/auth/admin-check",
+  authenticate,
+  authorize(...rolePermissions.adminOnly),
+  (_req, res) => {
+    return res.json({
+      message: "Allowed",
+    });
+  }
+);
