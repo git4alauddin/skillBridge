@@ -106,7 +106,7 @@ authRouter.post("/api/auth/login", async (req, res) => {
 authRouter.get("/api/auth/me", requireAuth, (req, res) => {
   if (!req.user) {
     return res.status(401).json({
-      message: "Authentication token is invalid",
+      message: "Invalid authentication token",
     });
   }
 

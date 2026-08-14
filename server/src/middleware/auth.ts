@@ -32,7 +32,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
     if (!user || user.status !== UserStatus.Active) {
       return res.status(401).json({
-        message: "Authentication token is invalid",
+        message: "Invalid authentication token",
       });
     }
 
@@ -40,10 +40,12 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
     return next();
   } catch {
     return res.status(401).json({
-      message: "Authentication token is invalid",
+      message: "Invalid authentication token",
     });
   }
 };
+
+export const authenticate = requireAuth;
 
 export const authorize =
   (...roles: UserRole[]) =>
