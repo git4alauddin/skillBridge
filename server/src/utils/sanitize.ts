@@ -1,5 +1,6 @@
 import type { User } from "../entities/User.js";
 
+// Public response shapes
 export type PublicUser = {
   id: string;
   fullName: string;
@@ -10,6 +11,7 @@ export type PublicUser = {
   updatedAt: Date;
 };
 
+// Entity sanitizers
 export const toPublicUser = (user: User): PublicUser => {
   return {
     id: user.id,

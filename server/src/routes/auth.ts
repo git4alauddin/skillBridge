@@ -13,8 +13,10 @@ import {
 import { hashPassword, signToken, verifyPassword } from "../utils/security.js";
 import { toPublicUser } from "../utils/sanitize.js";
 
+// Router setup
 export const authRouter = Router();
 
+// Request validation schemas
 const registerSchema = z.object({
   fullName: z.string().trim().min(1),
   email: z.string().trim().email(),
@@ -27,6 +29,7 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+// Auth routes
 authRouter.post("/api/auth/register", async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
 

@@ -11,9 +11,11 @@ import { Opportunity } from "./Opportunity.js";
 
 @Entity("uploaded_files")
 export class UploadedFile {
+  // Identity fields
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
+  // File metadata fields
   @Column({ type: "varchar", length: 255 })
   originalName!: string;
 
@@ -29,12 +31,14 @@ export class UploadedFile {
   @Column({ type: "varchar", length: 500 })
   url!: string;
 
+  // Relationship fields
   @ManyToOne(() => Application, { nullable: true })
   application!: Application | null;
 
   @ManyToOne(() => Opportunity, { nullable: true })
   opportunity!: Opportunity | null;
 
+  // Timestamp fields
   @CreateDateColumn()
   createdAt!: Date;
 }

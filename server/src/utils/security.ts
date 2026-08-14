@@ -4,14 +4,17 @@ import jwt, { type JwtPayload, type SignOptions } from "jsonwebtoken";
 import { config } from "../config.js";
 import type { User } from "../entities/User.js";
 
+// Password hashing settings
 const SALT_ROUNDS = 12;
 
+// JWT payload shapes
 export type AuthTokenPayload = JwtPayload & {
   sub: string;
   role: User["role"];
   email: string;
 };
 
+// Password helpers
 export const hashPassword = (password: string) => {
   return bcrypt.hash(password, SALT_ROUNDS);
 };
@@ -20,6 +23,7 @@ export const verifyPassword = (password: string, hash: string) => {
   return bcrypt.compare(password, hash);
 };
 
+// JWT helpers
 export const signToken = (user: User) => {
   const payload: AuthTokenPayload = {
     sub: user.id,

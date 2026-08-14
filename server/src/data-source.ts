@@ -9,6 +9,7 @@ import { Opportunity } from "./entities/Opportunity.js";
 import { UploadedFile } from "./entities/UploadedFile.js";
 import { User } from "./entities/User.js";
 
+// TypeORM data source
 export const AppDataSource = new DataSource({
   type: "postgres",
   host: config.database.host,
@@ -19,5 +20,6 @@ export const AppDataSource = new DataSource({
   ssl: config.database.ssl ? { rejectUnauthorized: false } : false,
   synchronize: config.database.synchronize,
   logging: config.nodeEnv === "development" ? ["error", "warn"] : ["error"],
+  // Database entities
   entities: [User, Category, Opportunity, Application, UploadedFile, AuditLog],
 });

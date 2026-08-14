@@ -1,5 +1,12 @@
+### Service checks
+
 ### Health check
 GET http://localhost:4000/health
+
+### Readiness check
+GET http://localhost:4000/ready
+
+### Registration checks
 
 ### Register student
 POST http://localhost:4000/api/auth/register
@@ -45,6 +52,8 @@ Content-Type: application/json
   "role": "student"
 }
 
+
+### Login and current-user checks
 
 ### Register fixed login test user
 POST http://localhost:4000/api/auth/register
@@ -97,6 +106,8 @@ Content-Type: application/json
   "email": "unknown-login-user@example.com",
   "password": "Password123"
 }
+
+### RBAC checks
 
 ### RBAC setup: create fixed admin in database console once
 # Public registration intentionally rejects admin users.

@@ -5,12 +5,14 @@ import { User } from "../entities/User.js";
 import { UserRole, UserStatus } from "../entities/enums.js";
 import { verifyToken } from "../utils/security.js";
 
+// Request typing
 declare module "express-serve-static-core" {
   interface Request {
     user?: User;
   }
 }
 
+// Authentication middleware
 export const requireAuth: RequestHandler = async (req, res, next) => {
   const authHeader = req.header("Authorization");
 
@@ -47,6 +49,7 @@ export const requireAuth: RequestHandler = async (req, res, next) => {
 
 export const authenticate = requireAuth;
 
+// Permission groups
 export const rolePermissions = {
   adminOnly: [UserRole.Admin],
   mentorOnly: [UserRole.Mentor],
@@ -55,6 +58,7 @@ export const rolePermissions = {
   authenticatedUsers: [UserRole.Admin, UserRole.Mentor, UserRole.Student],
 } as const;
 
+// Authorization middleware
 export const authorize =
   (...roles: UserRole[]) =>
   (req: Request, res: Response, next: NextFunction) => {

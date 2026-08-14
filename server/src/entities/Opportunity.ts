@@ -13,9 +13,11 @@ import { User } from "./User.js";
 
 @Entity("opportunities")
 export class Opportunity {
+  // Identity fields
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
+  // Opportunity details
   @Column({ type: "varchar", length: 160 })
   title!: string;
 
@@ -34,6 +36,7 @@ export class Opportunity {
   @Column({ type: "timestamp", nullable: true })
   startDate!: Date | null;
 
+  // Media fields
   @Column({ type: "varchar", length: 500, nullable: true })
   imageUrl!: string | null;
 
@@ -47,12 +50,14 @@ export class Opportunity {
   })
   status!: OpportunityStatus;
 
+  // Relationship fields
   @ManyToOne(() => User, { nullable: false })
   owner!: User;
 
   @ManyToOne(() => Category, { nullable: true, eager: true })
   category!: Category | null;
 
+  // Timestamp fields
   @CreateDateColumn()
   createdAt!: Date;
 

@@ -1,11 +1,13 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
 
+// Not found handler
 export const notFoundHandler: RequestHandler = (req, res) => {
   res.status(404).json({
     message: `Route ${req.method} ${req.originalUrl} not found`,
   });
 };
 
+// Generic error handler
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   console.error(err);
 

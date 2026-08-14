@@ -2,6 +2,7 @@ import { app } from "./app.js";
 import { config } from "./config.js";
 import { AppDataSource } from "./data-source.js";
 
+// Server startup
 const start = async () => {
   await AppDataSource.initialize();
 
@@ -12,6 +13,7 @@ const start = async () => {
   });
 };
 
+// Fatal startup errors
 start().catch((error) => {
   console.error("Failed to start SkillBridge API");
   console.error(error);

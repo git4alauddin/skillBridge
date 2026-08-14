@@ -1,3 +1,4 @@
+// User enums
 export enum UserRole {
   Admin = "admin",
   Mentor = "mentor",
@@ -9,6 +10,7 @@ export enum UserStatus {
   Suspended = "suspended",
 }
 
+// Opportunity enums
 export enum OpportunityType {
   Project = "project",
   Internship = "internship",
@@ -25,6 +27,7 @@ export enum OpportunityStatus {
   Rejected = "rejected",
 }
 
+// Application enums
 export enum ApplicationStatus {
   Pending = "pending",
   Shortlisted = "shortlisted",
