@@ -128,6 +128,7 @@ opportunitiesRouter.get(
 opportunitiesRouter.get("/api/opportunities", async (_req, res) => {
   const opportunityRepository = AppDataSource.getRepository(Opportunity);
 
+  // Fetch first page of published opportunities only.
   const [opportunities, total] = await opportunityRepository.findAndCount({
     where: { status: OpportunityStatus.Published },
     relations: { owner: true },
