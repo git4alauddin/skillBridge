@@ -25,6 +25,7 @@ export const verifyPassword = (password: string, hash: string) => {
 
 // JWT helpers
 export const signToken = (user: User) => {
+  // Store only stable identity and role claims in the token.
   const payload: AuthTokenPayload = {
     sub: user.id,
     role: user.role,
@@ -41,6 +42,7 @@ export const signToken = (user: User) => {
 export const verifyToken = (token: string) => {
   const payload = jwt.verify(token, config.jwt.secret);
 
+  // Reject tokens that do not match the auth payload shape.
   if (
     typeof payload === "string" ||
     typeof payload.sub !== "string" ||

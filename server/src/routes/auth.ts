@@ -30,7 +30,9 @@ const loginSchema = z.object({
 });
 
 // Auth routes
+// Register a student or mentor account.
 authRouter.post("/api/auth/register", async (req, res) => {
+  // Validate registration body.
   const parsed = registerSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -41,18 +43,22 @@ authRouter.post("/api/auth/register", async (req, res) => {
   }
 
   const userRepository = AppDataSource.getRepository(User);
+
+  // Normalize email before lookup and save.
   const email = parsed.data.email.toLowerCase();
 
   const existingUser = await userRepository.findOne({
     where: { email },
   });
 
+  // Reject duplicate accounts.
   if (existingUser) {
     return res.status(409).json({
       message: "Email is already registered",
     });
   }
 
+  // Save user with hashed password.
   const user = userRepository.create({
     fullName: parsed.data.fullName,
     email,
@@ -63,13 +69,16 @@ authRouter.post("/api/auth/register", async (req, res) => {
   const savedUser = await userRepository.save(user);
   const token = signToken(savedUser);
 
+  // Return token and public user profile.
   return res.status(201).json({
     token,
     user: toPublicUser(savedUser),
   });
 });
 
+// Log in an existing user and issue a JWT.
 authRouter.post("/api/auth/login", async (req, res) => {
+  // Validate login body.
   const parsed = loginSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -80,8 +89,11 @@ authRouter.post("/api/auth/login", async (req, res) => {
   }
 
   const userRepository = AppDataSource.getRepository(User);
+
+  // Normalize email before lookup.
   const email = parsed.data.email.toLowerCase();
 
+  // Find user by email.
   const user = await userRepository.findOne({
     where: { email },
   });
@@ -92,6 +104,7 @@ authRouter.post("/api/auth/login", async (req, res) => {
     });
   }
 
+  // Verify password before issuing token.
   const isPasswordValid = await verifyPassword(
     parsed.data.password,
     user.passwordHash
@@ -105,12 +118,14 @@ authRouter.post("/api/auth/login", async (req, res) => {
 
   const token = signToken(user);
 
+  // Return token and public user profile.
   return res.json({
     token,
     user: toPublicUser(user),
   });
 });
 
+// Return the authenticated user's public profile.
 authRouter.get("/api/auth/me", requireAuth, (req, res) => {
   if (!req.user) {
     return res.status(401).json({
@@ -123,6 +138,7 @@ authRouter.get("/api/auth/me", requireAuth, (req, res) => {
   });
 });
 
+// Verify the admin-only route protection pattern.
 authRouter.get(
   "/api/auth/admin-check",
   authenticate,

@@ -36,6 +36,7 @@ export type PublicOpportunity = {
 };
 
 // Entity sanitizers
+// Remove passwordHash and return only safe user fields.
 export const toPublicUser = (user: User): PublicUser => {
   return {
     id: user.id,
@@ -48,6 +49,7 @@ export const toPublicUser = (user: User): PublicUser => {
   };
 };
 
+// Return category fields needed by opportunity responses.
 export const toPublicCategory = (category: Category): PublicCategory => {
   return {
     id: category.id,
@@ -55,6 +57,7 @@ export const toPublicCategory = (category: Category): PublicCategory => {
   };
 };
 
+// Return opportunity data with sanitized owner and category.
 export const toPublicOpportunity = (
   opportunity: Opportunity
 ): PublicOpportunity => {
