@@ -7,6 +7,7 @@ import { authRouter } from "./routes/auth.js";
 import { config } from "./config.js";
 import { notFoundHandler, errorHandler } from "./middleware/errors.js";
 import { healthRouter } from "./routes/health.js";
+import { opportunitiesRouter } from "./routes/opportunities.js";
 
 // Express app setup
 export const app = express();
@@ -32,6 +33,7 @@ app.use(
 // Route registration
 app.use(authRouter);
 app.use(healthRouter);
+app.use(opportunitiesRouter);
 
 // Fallback handlers
 app.use(notFoundHandler);
