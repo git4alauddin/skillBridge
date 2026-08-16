@@ -1,4 +1,84 @@
 ### Opportunity checks
 
+### Register opportunity mentor
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Opportunity Test Mentor",
+  "email": "opportunity-mentor-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "mentor"
+}
+
+> {% client.global.set("opportunityMentorToken", response.body.token); %}
+
+### Register opportunity student
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Opportunity Test Student",
+  "email": "opportunity-student-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "student"
+}
+
+> {% client.global.set("opportunityStudentToken", response.body.token); %}
+
+### Create opportunity as mentor
+POST http://localhost:4000/api/opportunities
+Content-Type: application/json
+Authorization: Bearer {{opportunityMentorToken}}
+
+{
+  "title": "React Internship",
+  "description": "Build frontend features with React, TypeScript, and backend APIs.",
+  "type": "internship",
+  "capacity": 2,
+  "deadline": "2027-08-10T23:59:00.000Z",
+  "startDate": "2027-08-20T09:00:00.000Z",
+  "imageUrl": "",
+  "attachmentUrl": ""
+}
+
+### Reject opportunity creation without token
+POST http://localhost:4000/api/opportunities
+Content-Type: application/json
+
+{
+  "title": "Unauthorized Internship",
+  "description": "This request should fail because it does not send an auth token.",
+  "type": "internship",
+  "capacity": 2,
+  "deadline": "2027-08-10T23:59:00.000Z"
+}
+
+### Reject opportunity creation as student
+POST http://localhost:4000/api/opportunities
+Content-Type: application/json
+Authorization: Bearer {{opportunityStudentToken}}
+
+{
+  "title": "Student Internship",
+  "description": "This request should fail because students cannot create opportunities.",
+  "type": "internship",
+  "capacity": 2,
+  "deadline": "2027-08-10T23:59:00.000Z"
+}
+
+### Reject opportunity with past deadline
+POST http://localhost:4000/api/opportunities
+Content-Type: application/json
+Authorization: Bearer {{opportunityMentorToken}}
+
+{
+  "title": "Expired Internship",
+  "description": "This request should fail because the deadline is already in the past.",
+  "type": "internship",
+  "capacity": 2,
+  "deadline": "2025-08-10T23:59:00.000Z"
+}
+
 ### List published opportunities
 GET http://localhost:4000/api/opportunities
