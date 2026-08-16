@@ -1,0 +1,7 @@
+### Service checks
+
+### Health check
+GET http://localhost:4000/health
+
+### Readiness check
+GET http://localhost:4000/ready
