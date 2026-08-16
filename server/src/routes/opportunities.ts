@@ -1,10 +1,14 @@
-import { Router } from "express";
+import { Router, type Request } from "express";
 import { z } from "zod";
 
 import { AppDataSource } from "../data-source.js";
 import { Category } from "../entities/Category.js";
 import { Opportunity } from "../entities/Opportunity.js";
-import { OpportunityStatus, OpportunityType } from "../entities/enums.js";
+import {
+  OpportunityStatus,
+  OpportunityType,
+  UserRole,
+} from "../entities/enums.js";
 import {
   authenticate,
   authorize,
@@ -32,6 +36,16 @@ const createOpportunitySchema = z.object({
   startDate: z.coerce.date().optional(),
   imageUrl: z.string().trim().url().optional().or(z.literal("")),
   attachmentUrl: z.string().trim().url().optional().or(z.literal("")),
+});
+
+const updateOpportunitySchema = createOpportunitySchema.partial().extend({
+  status: z
+    .enum([
+      OpportunityStatus.Draft,
+      OpportunityStatus.Pending,
+      OpportunityStatus.Closed,
+    ])
+    .optional(),
 });
 
 // Opportunity routes
@@ -120,6 +134,105 @@ opportunitiesRouter.get(
 
     return res.json({
       opportunities: opportunities.map(toPublicOpportunity),
+    });
+  }
+);
+
+// Update an opportunity as admin or as the owning mentor.
+opportunitiesRouter.patch(
+  "/api/opportunities/:id",
+  authenticate,
+  authorize(...rolePermissions.opportunityManagers),
+  async (req: Request<{ id: string }>, res) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication is required",
+      });
+    }
+
+    // Validate update body.
+    const parsed = updateOpportunitySchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Invalid opportunity data",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const opportunityRepository = AppDataSource.getRepository(Opportunity);
+
+    // Load opportunity with owner for ownership check.
+    const opportunity = await opportunityRepository.findOne({
+      where: { id: req.params.id },
+      relations: { owner: true },
+    });
+
+    if (!opportunity) {
+      return res.status(404).json({
+        message: "Opportunity not found",
+      });
+    }
+
+    // Mentors can edit only their own opportunities.
+    if (
+      req.user.role === UserRole.Mentor &&
+      opportunity.owner.id !== req.user.id
+    ) {
+      return res.status(403).json({
+        message: "Mentors can edit only their own opportunities",
+      });
+    }
+
+    const categoryRepository = AppDataSource.getRepository(Category);
+
+    // Enforce future deadline rule when deadline is updated.
+    if (parsed.data.deadline && parsed.data.deadline <= new Date()) {
+      return res.status(400).json({
+        message: "Opportunity deadline must be in the future",
+      });
+    }
+
+    // Resolve optional active category when categoryId is updated.
+    const category = parsed.data.categoryId
+      ? await categoryRepository.findOne({
+          where: { id: parsed.data.categoryId, isActive: true },
+        })
+      : undefined;
+
+    if (parsed.data.categoryId && !category) {
+      return res.status(400).json({
+        message: "Category does not exist",
+      });
+    }
+
+    // Apply allowed updates.
+    opportunityRepository.merge(opportunity, {
+      title: parsed.data.title,
+      description: parsed.data.description,
+      type: parsed.data.type,
+      capacity: parsed.data.capacity,
+      deadline: parsed.data.deadline,
+      startDate:
+        parsed.data.startDate === undefined
+          ? opportunity.startDate
+          : parsed.data.startDate,
+      imageUrl:
+        parsed.data.imageUrl === undefined
+          ? opportunity.imageUrl
+          : parsed.data.imageUrl || null,
+      attachmentUrl:
+        parsed.data.attachmentUrl === undefined
+          ? opportunity.attachmentUrl
+          : parsed.data.attachmentUrl || null,
+      status: parsed.data.status,
+      category: category === undefined ? opportunity.category : category,
+    });
+
+    const savedOpportunity = await opportunityRepository.save(opportunity);
+
+    return res.json({
+      opportunity: toPublicOpportunity(savedOpportunity),
     });
   }
 );
