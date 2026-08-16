@@ -35,11 +35,13 @@ const createOpportunitySchema = z.object({
 });
 
 // Opportunity routes
+// Create a pending opportunity as a mentor or admin.
 opportunitiesRouter.post(
   "/api/opportunities",
   authenticate,
   authorize(...rolePermissions.opportunityManagers),
   async (req, res) => {
+    // Validate request body.
     const parsed = createOpportunitySchema.safeParse(req.body);
 
     if (!parsed.success) {
@@ -49,6 +51,7 @@ opportunitiesRouter.post(
       });
     }
 
+    // Enforce future deadline rule.
     if (parsed.data.deadline <= new Date()) {
       return res.status(400).json({
         message: "Opportunity deadline must be in the future",
@@ -58,6 +61,7 @@ opportunitiesRouter.post(
     const opportunityRepository = AppDataSource.getRepository(Opportunity);
     const categoryRepository = AppDataSource.getRepository(Category);
 
+    // Resolve optional active category.
     const category = parsed.data.categoryId
       ? await categoryRepository.findOne({
           where: { id: parsed.data.categoryId, isActive: true },
@@ -70,6 +74,7 @@ opportunitiesRouter.post(
       });
     }
 
+    // Save as pending approval for admin review.
     const opportunity = opportunityRepository.create({
       title: parsed.data.title,
       description: parsed.data.description,
@@ -92,6 +97,34 @@ opportunitiesRouter.post(
   }
 );
 
+// List opportunities owned by the authenticated mentor.
+opportunitiesRouter.get(
+  "/api/opportunities/mine",
+  authenticate,
+  authorize(...rolePermissions.mentorOnly),
+  async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication is required",
+      });
+    }
+
+    const opportunityRepository = AppDataSource.getRepository(Opportunity);
+
+    // Fetch only records owned by this mentor.
+    const opportunities = await opportunityRepository.find({
+      where: { owner: { id: req.user.id } },
+      relations: { owner: true },
+      order: { createdAt: "DESC" },
+    });
+
+    return res.json({
+      opportunities: opportunities.map(toPublicOpportunity),
+    });
+  }
+);
+
+// List published opportunities for public browsing.
 opportunitiesRouter.get("/api/opportunities", async (_req, res) => {
   const opportunityRepository = AppDataSource.getRepository(Opportunity);
 

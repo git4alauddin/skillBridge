@@ -42,6 +42,17 @@ Authorization: Bearer {{opportunityMentorToken}}
   "attachmentUrl": ""
 }
 
+### List my opportunities as mentor
+GET http://localhost:4000/api/opportunities/mine
+Authorization: Bearer {{opportunityMentorToken}}
+
+### Reject my opportunities without token
+GET http://localhost:4000/api/opportunities/mine
+
+### Reject my opportunities as student
+GET http://localhost:4000/api/opportunities/mine
+Authorization: Bearer {{opportunityStudentToken}}
+
 ### Reject opportunity creation without token
 POST http://localhost:4000/api/opportunities
 Content-Type: application/json
