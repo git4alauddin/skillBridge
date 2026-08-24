@@ -237,6 +237,66 @@ opportunitiesRouter.patch(
   }
 );
 
+// Approve an opportunity and publish it for public browsing.
+opportunitiesRouter.post(
+  "/api/opportunities/:id/approve",
+  authenticate,
+  authorize(...rolePermissions.adminOnly),
+  async (req: Request<{ id: string }>, res) => {
+    const opportunityRepository = AppDataSource.getRepository(Opportunity);
+
+    // Load opportunity with owner for the public response shape.
+    const opportunity = await opportunityRepository.findOne({
+      where: { id: req.params.id },
+      relations: { owner: true },
+    });
+
+    if (!opportunity) {
+      return res.status(404).json({
+        message: "Opportunity not found",
+      });
+    }
+
+    opportunity.status = OpportunityStatus.Published;
+
+    const savedOpportunity = await opportunityRepository.save(opportunity);
+
+    return res.json({
+      opportunity: toPublicOpportunity(savedOpportunity),
+    });
+  }
+);
+
+// Reject an opportunity so it stays hidden from public browsing.
+opportunitiesRouter.post(
+  "/api/opportunities/:id/reject",
+  authenticate,
+  authorize(...rolePermissions.adminOnly),
+  async (req: Request<{ id: string }>, res) => {
+    const opportunityRepository = AppDataSource.getRepository(Opportunity);
+
+    // Load opportunity with owner for the public response shape.
+    const opportunity = await opportunityRepository.findOne({
+      where: { id: req.params.id },
+      relations: { owner: true },
+    });
+
+    if (!opportunity) {
+      return res.status(404).json({
+        message: "Opportunity not found",
+      });
+    }
+
+    opportunity.status = OpportunityStatus.Rejected;
+
+    const savedOpportunity = await opportunityRepository.save(opportunity);
+
+    return res.json({
+      opportunity: toPublicOpportunity(savedOpportunity),
+    });
+  }
+);
+
 // List published opportunities for public browsing.
 opportunitiesRouter.get("/api/opportunities", async (_req, res) => {
   const opportunityRepository = AppDataSource.getRepository(Opportunity);
