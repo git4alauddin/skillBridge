@@ -257,3 +257,30 @@ opportunitiesRouter.get("/api/opportunities", async (_req, res) => {
     limit: 12,
   });
 });
+
+// Return one published opportunity for public browsing.
+opportunitiesRouter.get(
+  "/api/opportunities/:id",
+  async (req: Request<{ id: string }>, res) => {
+    const opportunityRepository = AppDataSource.getRepository(Opportunity);
+
+    // Public detail pages should show only published opportunities.
+    const opportunity = await opportunityRepository.findOne({
+      where: {
+        id: req.params.id,
+        status: OpportunityStatus.Published,
+      },
+      relations: { owner: true },
+    });
+
+    if (!opportunity) {
+      return res.status(404).json({
+        message: "Opportunity not found",
+      });
+    }
+
+    return res.json({
+      opportunity: toPublicOpportunity(opportunity),
+    });
+  }
+);
