@@ -29,6 +29,19 @@ Content-Type: application/json
 
 > {% client.global.set("opportunityStudentToken", response.body.token); %}
 
+### Register other mentor
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Other Opportunity Mentor",
+  "email": "other-opportunity-mentor-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "mentor"
+}
+
+> {% client.global.set("otherOpportunityMentorToken", response.body.token); %}
+
 # Admin must already exist from the RBAC setup SQL in rbac.http.
 ### Login admin
 POST http://localhost:4000/api/auth/login
@@ -138,6 +151,15 @@ Authorization: Bearer {{opportunityStudentToken}}
 
 {
   "title": "Student Update"
+}
+
+### Reject update as other mentor
+PATCH http://localhost:4000/api/opportunities/{{opportunityId}}
+Content-Type: application/json
+Authorization: Bearer {{otherOpportunityMentorToken}}
+
+{
+  "title": "Other Mentor Update"
 }
 
 ### Reject update with past deadline
