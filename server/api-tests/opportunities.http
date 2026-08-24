@@ -163,6 +163,24 @@ Authorization: Bearer {{opportunityMentorToken}}
 ### List published
 GET http://localhost:4000/api/opportunities
 
+### List published with pagination
+GET http://localhost:4000/api/opportunities?page=1&limit=5
+
+### Reject invalid page
+GET http://localhost:4000/api/opportunities?page=0
+
+### Reject invalid limit
+GET http://localhost:4000/api/opportunities?limit=100
+
+### Filter by type
+GET http://localhost:4000/api/opportunities?type=internship
+
+### Reject invalid type
+GET http://localhost:4000/api/opportunities?type=invalid
+
+### Search by text
+GET http://localhost:4000/api/opportunities?q=React
+
 # This opportunity starts as pending_approval, so public detail should return 404.
 ### Reject unpublished detail
 GET http://localhost:4000/api/opportunities/{{opportunityId}}

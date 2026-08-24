@@ -1,4 +1,5 @@
 import { Router, type Request } from "express";
+import { Brackets } from "typeorm";
 import { z } from "zod";
 
 import { AppDataSource } from "../data-source.js";
@@ -46,6 +47,21 @@ const updateOpportunitySchema = createOpportunitySchema.partial().extend({
       OpportunityStatus.Closed,
     ])
     .optional(),
+});
+
+const publicOpportunityListQuerySchema = z.object({
+  q: z.string().trim().optional(),
+  type: z
+    .enum([
+      OpportunityType.Project,
+      OpportunityType.Internship,
+      OpportunityType.Research,
+      OpportunityType.Hackathon,
+      OpportunityType.Collaboration,
+    ])
+    .optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(12),
 });
 
 // Opportunity routes
@@ -298,23 +314,55 @@ opportunitiesRouter.post(
 );
 
 // List published opportunities for public browsing.
-opportunitiesRouter.get("/api/opportunities", async (_req, res) => {
+opportunitiesRouter.get("/api/opportunities", async (req, res) => {
+  const parsed = publicOpportunityListQuerySchema.safeParse(req.query);
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: "Invalid opportunity filters",
+      errors: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  const { q, type, page, limit } = parsed.data;
   const opportunityRepository = AppDataSource.getRepository(Opportunity);
 
-  // Fetch first page of published opportunities only.
-  const [opportunities, total] = await opportunityRepository.findAndCount({
-    where: { status: OpportunityStatus.Published },
-    relations: { owner: true },
-    order: { createdAt: "DESC" },
-    take: 12,
-    skip: 0,
-  });
+  // Build a public query that always keeps unpublished records hidden.
+  const query = opportunityRepository
+    .createQueryBuilder("opportunity")
+    .leftJoinAndSelect("opportunity.owner", "owner")
+    .leftJoinAndSelect("opportunity.category", "category")
+    .where("opportunity.status = :status", {
+      status: OpportunityStatus.Published,
+    });
+
+  if (type) {
+    query.andWhere("opportunity.type = :type", { type });
+  }
+
+  if (q) {
+    query.andWhere(
+      new Brackets((qb) => {
+        qb.where("opportunity.title ILIKE :search", { search: `%${q}%` })
+          .orWhere("opportunity.description ILIKE :search", {
+            search: `%${q}%`,
+          })
+          .orWhere("category.name ILIKE :search", { search: `%${q}%` });
+      })
+    );
+  }
+
+  const [opportunities, total] = await query
+    .orderBy("opportunity.createdAt", "DESC")
+    .take(limit)
+    .skip((page - 1) * limit)
+    .getManyAndCount();
 
   return res.json({
     opportunities: opportunities.map(toPublicOpportunity),
     total,
-    page: 1,
-    limit: 12,
+    page,
+    limit,
   });
 });
 
