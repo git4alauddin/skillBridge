@@ -5,7 +5,11 @@ import { AppDataSource } from "../data-source.js";
 import { Application } from "../entities/Application.js";
 import { Opportunity } from "../entities/Opportunity.js";
 import { User } from "../entities/User.js";
-import { OpportunityStatus, UserRole } from "../entities/enums.js";
+import {
+  ApplicationStatus,
+  OpportunityStatus,
+  UserRole,
+} from "../entities/enums.js";
 
 export const dashboardRouter = Router();
 
@@ -59,16 +63,63 @@ dashboardRouter.get(
     }
 
     if (req.user.role === UserRole.Mentor) {
+      const [
+        totalOpportunities,
+        activeOpportunities,
+        closedOpportunities,
+        applicationsReceived,
+        shortlistedStudents,
+        selectedStudents,
+        waitlistedStudents,
+      ] = await Promise.all([
+        opportunityRepository.count({
+          where: { owner: { id: req.user.id } },
+        }),
+        opportunityRepository.count({
+          where: {
+            owner: { id: req.user.id },
+            status: OpportunityStatus.Published,
+          },
+        }),
+        opportunityRepository.count({
+          where: {
+            owner: { id: req.user.id },
+            status: OpportunityStatus.Closed,
+          },
+        }),
+        applicationRepository.count({
+          where: { opportunity: { owner: { id: req.user.id } } },
+        }),
+        applicationRepository.count({
+          where: {
+            opportunity: { owner: { id: req.user.id } },
+            status: ApplicationStatus.Shortlisted,
+          },
+        }),
+        applicationRepository.count({
+          where: {
+            opportunity: { owner: { id: req.user.id } },
+            status: ApplicationStatus.Selected,
+          },
+        }),
+        applicationRepository.count({
+          where: {
+            opportunity: { owner: { id: req.user.id } },
+            status: ApplicationStatus.Waitlisted,
+          },
+        }),
+      ]);
+
       return res.json({
         role: req.user.role,
         metrics: {
-          totalOpportunities: 0,
-          activeOpportunities: 0,
-          closedOpportunities: 0,
-          applicationsReceived: 0,
-          shortlistedStudents: 0,
-          selectedStudents: 0,
-          waitlistedStudents: 0,
+          totalOpportunities,
+          activeOpportunities,
+          closedOpportunities,
+          applicationsReceived,
+          shortlistedStudents,
+          selectedStudents,
+          waitlistedStudents,
         },
       });
     }

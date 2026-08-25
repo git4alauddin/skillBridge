@@ -56,3 +56,25 @@ Authorization: Bearer {{dashboardAdminToken}}
 
 ### Reject dashboard without token
 GET http://localhost:4000/api/dashboard
+
+# Mentor metric fixture
+
+### Create mentor metric opportunity
+POST http://localhost:4000/api/opportunities
+Content-Type: application/json
+Authorization: Bearer {{dashboardMentorToken}}
+
+{
+  "title": "Dashboard Mentor Test Opportunity",
+  "description": "Used only to verify mentor dashboard counts.",
+  "type": "internship",
+  "capacity": 2,
+  "deadline": "2027-08-10T23:59:00.000Z",
+  "startDate": "2027-08-20T09:00:00.000Z",
+  "imageUrl": "",
+  "attachmentUrl": ""
+}
+
+### Get mentor metrics after opportunity
+GET http://localhost:4000/api/dashboard
+Authorization: Bearer {{dashboardMentorToken}}
