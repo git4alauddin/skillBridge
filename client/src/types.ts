@@ -104,3 +104,11 @@ export type OpportunityListResponse = {
 export type ApplyResponse = {
   application: Application;
 };
+
+export type ApplicationListResponse = {
+  applications: Application[];
+};
+
+export type WithdrawApplicationResponse = {
+  application: Application;
+};

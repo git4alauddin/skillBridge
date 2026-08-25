@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { RequireAuth } from "./components/RequireAuth";
 import { Shell } from "./components/Shell";
+import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { AuthPage } from "./pages/AuthPage";
 import { BrowsePage } from "./pages/BrowsePage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -21,6 +22,7 @@ function App() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="browse" element={<BrowsePage />} />
+        <Route path="applications" element={<ApplicationsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
