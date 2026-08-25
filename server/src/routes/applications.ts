@@ -96,8 +96,80 @@ applicationsRouter.post(
   }
 );
 
-applicationsRouter.get("/api/applications", (_req, res) => {
-  return res.json({
-    applications: [],
-  });
-});
+// List applications visible to the authenticated user.
+applicationsRouter.get(
+  "/api/applications",
+  authenticate,
+  authorize(...rolePermissions.authenticatedUsers),
+  async (req, res) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication is required",
+      });
+    }
+
+    const applicationRepository = AppDataSource.getRepository(Application);
+
+    // Students can see only their own applications.
+    const applications = await applicationRepository.find({
+      where: {
+        student: { id: req.user.id },
+      },
+      relations: {
+        student: true,
+        opportunity: {
+          owner: true,
+        },
+      },
+      order: { createdAt: "DESC" },
+    });
+
+    return res.json({
+      applications: applications.map(toPublicApplication),
+    });
+  }
+);
+
+// Withdraw an application owned by the authenticated student.
+applicationsRouter.post(
+  "/api/applications/:id/withdraw",
+  authenticate,
+  authorize(...rolePermissions.studentOnly),
+  async (req: Request<{ id: string }>, res) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication is required",
+      });
+    }
+
+    const applicationRepository = AppDataSource.getRepository(Application);
+
+    // Students can withdraw only their own applications.
+    const application = await applicationRepository.findOne({
+      where: {
+        id: req.params.id,
+        student: { id: req.user.id },
+      },
+      relations: {
+        student: true,
+        opportunity: {
+          owner: true,
+        },
+      },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        message: "Application not found",
+      });
+    }
+
+    application.status = ApplicationStatus.Withdrawn;
+
+    const savedApplication = await applicationRepository.save(application);
+
+    return res.json({
+      application: toPublicApplication(savedApplication),
+    });
+  }
+);

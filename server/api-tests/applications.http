@@ -28,6 +28,19 @@ Content-Type: application/json
 
 > {% client.global.set("applicationStudentToken", response.body.token); %}
 
+### Register other student
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Other Application Student",
+  "email": "other-application-student-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "student"
+}
+
+> {% client.global.set("otherApplicationStudentToken", response.body.token); %}
+
 # Admin must already exist from the RBAC setup SQL in rbac.http.
 ### Login admin
 POST http://localhost:4000/api/auth/login
@@ -75,6 +88,15 @@ Authorization: Bearer {{applicationStudentToken}}
 
 > {% client.global.set("applicationId", response.body.application.id); %}
 
+# Student management
+
+### List my applications
+GET http://localhost:4000/api/applications
+Authorization: Bearer {{applicationStudentToken}}
+
+### Reject list without token
+GET http://localhost:4000/api/applications
+
 ### Reject duplicate application
 POST http://localhost:4000/api/opportunities/{{applicationOpportunityId}}/apply
 Content-Type: application/json
@@ -83,6 +105,21 @@ Authorization: Bearer {{applicationStudentToken}}
 {
   "coverNote": "Trying to apply again."
 }
+
+### Withdraw my application
+POST http://localhost:4000/api/applications/{{applicationId}}/withdraw
+Authorization: Bearer {{applicationStudentToken}}
+
+### Reject withdraw without token
+POST http://localhost:4000/api/applications/{{applicationId}}/withdraw
+
+### Reject withdraw as other student
+POST http://localhost:4000/api/applications/{{applicationId}}/withdraw
+Authorization: Bearer {{otherApplicationStudentToken}}
+
+### Reject withdraw unknown application
+POST http://localhost:4000/api/applications/11111111-1111-4111-8111-111111111111/withdraw
+Authorization: Bearer {{applicationStudentToken}}
 
 ### Reject apply without token
 POST http://localhost:4000/api/opportunities/{{applicationOpportunityId}}/apply
