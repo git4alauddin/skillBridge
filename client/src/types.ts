@@ -93,3 +93,14 @@ export type LoginPayload = {
 export type CurrentUserResponse = {
   user: User;
 };
+
+export type OpportunityListResponse = {
+  opportunities: Opportunity[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+export type ApplyResponse = {
+  application: Application;
+};
