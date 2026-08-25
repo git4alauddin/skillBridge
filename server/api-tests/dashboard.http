@@ -15,11 +15,44 @@ Content-Type: application/json
 
 > {% client.global.set("dashboardStudentToken", response.body.token); %}
 
+### Register dashboard mentor
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Dashboard Test Mentor",
+  "email": "dashboard-mentor-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "mentor"
+}
+
+> {% client.global.set("dashboardMentorToken", response.body.token); %}
+
+# Admin must already exist from the RBAC setup SQL in rbac.http.
+### Login dashboard admin
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "rbac-admin@example.com",
+  "password": "Password123"
+}
+
+> {% client.global.set("dashboardAdminToken", response.body.token); %}
+
 # Access
 
 ### Get dashboard as student
 GET http://localhost:4000/api/dashboard
 Authorization: Bearer {{dashboardStudentToken}}
+
+### Get dashboard as mentor
+GET http://localhost:4000/api/dashboard
+Authorization: Bearer {{dashboardMentorToken}}
+
+### Get dashboard as admin
+GET http://localhost:4000/api/dashboard
+Authorization: Bearer {{dashboardAdminToken}}
 
 ### Reject dashboard without token
 GET http://localhost:4000/api/dashboard
