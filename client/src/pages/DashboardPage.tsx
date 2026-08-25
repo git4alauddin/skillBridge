@@ -40,9 +40,11 @@ export const DashboardPage = () => {
   return (
     <main className="page-content">
       <section className="page-panel">
-        <div>
-          <h2>Dashboard</h2>
-          <p>{dashboard.role} overview</p>
+        <div className="page-heading">
+          <div>
+            <h2>Dashboard</h2>
+            <p>{dashboard.role} overview</p>
+          </div>
         </div>
         <MetricGrid metrics={dashboard.metrics} />
       </section>

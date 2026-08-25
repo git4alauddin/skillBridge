@@ -195,6 +195,36 @@ h3 {
   padding: 28px;
 }
 
+/* Dashboard */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.metric-card span {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.metric-card strong {
+  color: var(--text-strong);
+  font-size: 34px;
+  line-height: 1;
+}
+
 /* Auth page */
 .auth-page {
   display: grid;
