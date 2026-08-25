@@ -4,7 +4,11 @@ import { z } from "zod";
 import { AppDataSource } from "../data-source.js";
 import { Application } from "../entities/Application.js";
 import { Opportunity } from "../entities/Opportunity.js";
-import { ApplicationStatus, OpportunityStatus } from "../entities/enums.js";
+import {
+  ApplicationStatus,
+  OpportunityStatus,
+  UserRole,
+} from "../entities/enums.js";
 import { authenticate, authorize, rolePermissions } from "../middleware/auth.js";
 import { toPublicApplication } from "../utils/sanitize.js";
 
@@ -13,6 +17,18 @@ export const applicationsRouter = Router();
 // Request validation schemas
 const applyToOpportunitySchema = z.object({
   coverNote: z.string().trim().max(2000).optional(),
+});
+
+const updateApplicationStatusSchema = z.object({
+  status: z.enum([
+    ApplicationStatus.Pending,
+    ApplicationStatus.Shortlisted,
+    ApplicationStatus.Selected,
+    ApplicationStatus.Rejected,
+    ApplicationStatus.Waitlisted,
+    ApplicationStatus.Completed,
+  ]),
+  mentorNote: z.string().trim().max(2000).optional(),
 });
 
 // Application routes
@@ -110,22 +126,103 @@ applicationsRouter.get(
 
     const applicationRepository = AppDataSource.getRepository(Application);
 
-    // Students can see only their own applications.
-    const applications = await applicationRepository.find({
-      where: {
-        student: { id: req.user.id },
-      },
+    // Choose application visibility by role.
+    const baseFindOptions = {
       relations: {
         student: true,
         opportunity: {
           owner: true,
         },
       },
-      order: { createdAt: "DESC" },
-    });
+      order: { createdAt: "DESC" as const },
+    };
+
+    const applications =
+      req.user.role === UserRole.Admin
+        ? await applicationRepository.find(baseFindOptions)
+        : req.user.role === UserRole.Mentor
+          ? await applicationRepository.find({
+              ...baseFindOptions,
+              where: {
+                opportunity: {
+                  owner: { id: req.user.id },
+                },
+              },
+            })
+          : await applicationRepository.find({
+              ...baseFindOptions,
+              where: {
+                student: { id: req.user.id },
+              },
+            });
 
     return res.json({
       applications: applications.map(toPublicApplication),
+    });
+  }
+);
+
+// Update application status as admin or owning mentor.
+applicationsRouter.patch(
+  "/api/applications/:id/status",
+  authenticate,
+  authorize(...rolePermissions.opportunityManagers),
+  async (req: Request<{ id: string }>, res) => {
+    if (!req.user) {
+      return res.status(401).json({
+        message: "Authentication is required",
+      });
+    }
+
+    // Validate status update body.
+    const parsed = updateApplicationStatusSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Invalid application status data",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const applicationRepository = AppDataSource.getRepository(Application);
+
+    // Load application with opportunity owner for mentor ownership check.
+    const application = await applicationRepository.findOne({
+      where: { id: req.params.id },
+      relations: {
+        student: true,
+        opportunity: {
+          owner: true,
+        },
+      },
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        message: "Application not found",
+      });
+    }
+
+    // Mentors can review only applications for their own opportunities.
+    if (
+      req.user.role === UserRole.Mentor &&
+      application.opportunity.owner.id !== req.user.id
+    ) {
+      return res.status(403).json({
+        message: "Mentors can review only applications for their own opportunities",
+      });
+    }
+
+    application.status = parsed.data.status;
+    application.mentorNote =
+      parsed.data.mentorNote === undefined
+        ? application.mentorNote
+        : parsed.data.mentorNote || null;
+
+    const savedApplication = await applicationRepository.save(application);
+
+    return res.json({
+      application: toPublicApplication(savedApplication),
     });
   }
 );

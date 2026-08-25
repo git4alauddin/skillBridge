@@ -106,6 +106,64 @@ Authorization: Bearer {{applicationStudentToken}}
   "coverNote": "Trying to apply again."
 }
 
+# Mentor review
+
+### List applications as mentor
+GET http://localhost:4000/api/applications
+Authorization: Bearer {{applicationMentorToken}}
+
+### List applications as admin
+GET http://localhost:4000/api/applications
+Authorization: Bearer {{applicationAdminToken}}
+
+### Reject status update as student
+PATCH http://localhost:4000/api/applications/{{applicationId}}/status
+Content-Type: application/json
+Authorization: Bearer {{applicationStudentToken}}
+
+{
+  "status": "shortlisted",
+  "mentorNote": "Student should not update status."
+}
+
+### Update status as mentor
+PATCH http://localhost:4000/api/applications/{{applicationId}}/status
+Content-Type: application/json
+Authorization: Bearer {{applicationMentorToken}}
+
+{
+  "status": "shortlisted",
+  "mentorNote": "Strong application."
+}
+
+### Update status as admin
+PATCH http://localhost:4000/api/applications/{{applicationId}}/status
+Content-Type: application/json
+Authorization: Bearer {{applicationAdminToken}}
+
+{
+  "status": "waitlisted",
+  "mentorNote": "Admin review update."
+}
+
+### Reject invalid status
+PATCH http://localhost:4000/api/applications/{{applicationId}}/status
+Content-Type: application/json
+Authorization: Bearer {{applicationMentorToken}}
+
+{
+  "status": "withdrawn"
+}
+
+### Reject status update for unknown application
+PATCH http://localhost:4000/api/applications/11111111-1111-4111-8111-111111111111/status
+Content-Type: application/json
+Authorization: Bearer {{applicationMentorToken}}
+
+{
+  "status": "shortlisted"
+}
+
 ### Withdraw my application
 POST http://localhost:4000/api/applications/{{applicationId}}/withdraw
 Authorization: Bearer {{applicationStudentToken}}
