@@ -2,12 +2,14 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { authRouter } from "./routes/auth.js";
 
 import { config } from "./config.js";
 import { notFoundHandler, errorHandler } from "./middleware/errors.js";
+
+import { authRouter } from "./routes/auth.js";
 import { healthRouter } from "./routes/health.js";
 import { opportunitiesRouter } from "./routes/opportunities.js";
+import { applicationsRouter } from "./routes/applications.js";
 
 // Express app setup
 export const app = express();
@@ -34,6 +36,7 @@ app.use(
 app.use(authRouter);
 app.use(healthRouter);
 app.use(opportunitiesRouter);
+app.use(applicationsRouter);
 
 // Fallback handlers
 app.use(notFoundHandler);
