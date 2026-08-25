@@ -124,17 +124,74 @@ dashboardRouter.get(
       });
     }
 
+    const [
+      totalApplications,
+      pending,
+      shortlisted,
+      selected,
+      rejected,
+      waitlisted,
+      withdrawn,
+      completed,
+    ] = await Promise.all([
+      applicationRepository.count({
+        where: { student: { id: req.user.id } },
+      }),
+      applicationRepository.count({
+        where: {
+          student: { id: req.user.id },
+          status: ApplicationStatus.Pending,
+        },
+      }),
+      applicationRepository.count({
+        where: {
+          student: { id: req.user.id },
+          status: ApplicationStatus.Shortlisted,
+        },
+      }),
+      applicationRepository.count({
+        where: {
+          student: { id: req.user.id },
+          status: ApplicationStatus.Selected,
+        },
+      }),
+      applicationRepository.count({
+        where: {
+          student: { id: req.user.id },
+          status: ApplicationStatus.Rejected,
+        },
+      }),
+      applicationRepository.count({
+        where: {
+          student: { id: req.user.id },
+          status: ApplicationStatus.Waitlisted,
+        },
+      }),
+      applicationRepository.count({
+        where: {
+          student: { id: req.user.id },
+          status: ApplicationStatus.Withdrawn,
+        },
+      }),
+      applicationRepository.count({
+        where: {
+          student: { id: req.user.id },
+          status: ApplicationStatus.Completed,
+        },
+      }),
+    ]);
+
     return res.json({
       role: req.user.role,
       metrics: {
-        totalApplications: 0,
-        pending: 0,
-        shortlisted: 0,
-        selected: 0,
-        rejected: 0,
-        waitlisted: 0,
-        withdrawn: 0,
-        completed: 0,
+        totalApplications,
+        pending,
+        shortlisted,
+        selected,
+        rejected,
+        waitlisted,
+        withdrawn,
+        completed,
       },
     });
   }

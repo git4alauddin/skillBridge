@@ -78,3 +78,40 @@ Authorization: Bearer {{dashboardMentorToken}}
 ### Get mentor metrics after opportunity
 GET http://localhost:4000/api/dashboard
 Authorization: Bearer {{dashboardMentorToken}}
+
+# Student metric fixture
+
+### Create student metric opportunity
+POST http://localhost:4000/api/opportunities
+Content-Type: application/json
+Authorization: Bearer {{dashboardMentorToken}}
+
+{
+  "title": "Dashboard Student Test Opportunity",
+  "description": "Used only to verify student dashboard application counts.",
+  "type": "internship",
+  "capacity": 2,
+  "deadline": "2027-08-10T23:59:00.000Z",
+  "startDate": "2027-08-20T09:00:00.000Z",
+  "imageUrl": "",
+  "attachmentUrl": ""
+}
+
+> {% client.global.set("dashboardStudentOpportunityId", response.body.opportunity.id); %}
+
+### Approve student metric opportunity
+POST http://localhost:4000/api/opportunities/{{dashboardStudentOpportunityId}}/approve
+Authorization: Bearer {{dashboardAdminToken}}
+
+### Apply to student metric opportunity
+POST http://localhost:4000/api/opportunities/{{dashboardStudentOpportunityId}}/apply
+Content-Type: application/json
+Authorization: Bearer {{dashboardStudentToken}}
+
+{
+  "coverNote": "Used only to verify student dashboard application counts."
+}
+
+### Get student metrics after application
+GET http://localhost:4000/api/dashboard
+Authorization: Bearer {{dashboardStudentToken}}
