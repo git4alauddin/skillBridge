@@ -347,6 +347,38 @@ h3 {
   color: #cbd5e1;
 }
 
+/* Mentor workflows */
+.opportunity-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.opportunity-form label:has(textarea),
+.opportunity-form button {
+  grid-column: 1 / -1;
+}
+
+.opportunity-form textarea {
+  min-height: 120px;
+}
+
+.review-controls {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.review-controls button {
+  justify-self: start;
+}
+
 /* Auth page */
 .auth-page {
   display: grid;
