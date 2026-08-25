@@ -64,6 +64,21 @@ const publicOpportunityListQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(12),
 });
 
+const adminOpportunityReviewQuerySchema = z.object({
+  status: z
+    .enum([
+      "all",
+      OpportunityStatus.Draft,
+      OpportunityStatus.Pending,
+      OpportunityStatus.Published,
+      OpportunityStatus.Closed,
+      OpportunityStatus.Rejected,
+    ])
+    .default(OpportunityStatus.Pending),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(50),
+});
+
 // Opportunity routes
 // Create a pending opportunity as a mentor or admin.
 opportunitiesRouter.post(
@@ -150,6 +165,47 @@ opportunitiesRouter.get(
 
     return res.json({
       opportunities: opportunities.map(toPublicOpportunity),
+    });
+  }
+);
+
+// List opportunities for admin review and approval workflows.
+opportunitiesRouter.get(
+  "/api/opportunities/admin/review",
+  authenticate,
+  authorize(...rolePermissions.adminOnly),
+  async (req, res) => {
+    const parsed = adminOpportunityReviewQuerySchema.safeParse(req.query);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Invalid opportunity review filters",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const { status, page, limit } = parsed.data;
+    const opportunityRepository = AppDataSource.getRepository(Opportunity);
+
+    const query = opportunityRepository
+      .createQueryBuilder("opportunity")
+      .leftJoinAndSelect("opportunity.owner", "owner")
+      .leftJoinAndSelect("opportunity.category", "category")
+      .orderBy("opportunity.createdAt", "DESC")
+      .take(limit)
+      .skip((page - 1) * limit);
+
+    if (status !== "all") {
+      query.where("opportunity.status = :status", { status });
+    }
+
+    const [opportunities, total] = await query.getManyAndCount();
+
+    return res.json({
+      opportunities: opportunities.map(toPublicOpportunity),
+      total,
+      page,
+      limit,
     });
   }
 );
