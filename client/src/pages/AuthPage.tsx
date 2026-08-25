@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Navigate } from "react-router-dom";
 
 import { apiErrorMessage } from "../api";
 import { useAuth } from "../state/useAuth";
@@ -51,14 +52,7 @@ export const AuthPage = () => {
   };
 
   if (user) {
-    return (
-      <main className="auth-page">
-        <section className="auth-panel">
-          <h1>SkillBridge</h1>
-          <p>You are signed in as {user.fullName}.</p>
-        </section>
-      </main>
-    );
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -104,7 +98,9 @@ export const AuthPage = () => {
                 <select
                   value={role}
                   onChange={(event) =>
-                    setRole(event.target.value as Extract<Role, "student" | "mentor">)
+                    setRole(
+                      event.target.value as Extract<Role, "student" | "mentor">,
+                    )
                   }
                 >
                   <option value="student">Student</option>
