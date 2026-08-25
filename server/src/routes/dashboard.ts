@@ -1,7 +1,11 @@
 import { Router } from "express";
 
 import { authenticate, authorize, rolePermissions } from "../middleware/auth.js";
-import { UserRole } from "../entities/enums.js";
+import { AppDataSource } from "../data-source.js";
+import { Application } from "../entities/Application.js";
+import { Opportunity } from "../entities/Opportunity.js";
+import { User } from "../entities/User.js";
+import { OpportunityStatus, UserRole } from "../entities/enums.js";
 
 export const dashboardRouter = Router();
 
@@ -16,17 +20,40 @@ dashboardRouter.get(
       });
     }
 
+    // Prepare repositories used by role-specific dashboard metric queries.
+    const userRepository = AppDataSource.getRepository(User);
+    const opportunityRepository = AppDataSource.getRepository(Opportunity);
+    const applicationRepository = AppDataSource.getRepository(Application);
+
     // Return the dashboard shape for the authenticated user's role.
     if (req.user.role === UserRole.Admin) {
+      const [
+        totalUsers,
+        totalStudents,
+        totalMentors,
+        totalOpportunities,
+        pendingApprovals,
+        totalApplications,
+      ] = await Promise.all([
+        userRepository.count(),
+        userRepository.count({ where: { role: UserRole.Student } }),
+        userRepository.count({ where: { role: UserRole.Mentor } }),
+        opportunityRepository.count(),
+        opportunityRepository.count({
+          where: { status: OpportunityStatus.Pending },
+        }),
+        applicationRepository.count(),
+      ]);
+
       return res.json({
         role: req.user.role,
         metrics: {
-          totalUsers: 0,
-          totalStudents: 0,
-          totalMentors: 0,
-          totalOpportunities: 0,
-          pendingApprovals: 0,
-          totalApplications: 0,
+          totalUsers,
+          totalStudents,
+          totalMentors,
+          totalOpportunities,
+          pendingApprovals,
+          totalApplications,
         },
       });
     }
