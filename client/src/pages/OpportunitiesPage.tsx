@@ -7,7 +7,9 @@ import type {
   CreateOpportunityPayload,
   MyOpportunitiesResponse,
   Opportunity,
+  OpportunityListResponse,
   OpportunityResponse,
+  OpportunityStatus,
   OpportunityType,
 } from "../types";
 
@@ -19,10 +21,23 @@ const opportunityTypes: OpportunityType[] = [
   "collaboration",
 ];
 
+type AdminReviewStatusFilter = OpportunityStatus | "all";
+
+const adminReviewStatusOptions: AdminReviewStatusFilter[] = [
+  "pending_approval",
+  "all",
+  "published",
+  "rejected",
+  "draft",
+  "closed",
+];
+
 export const OpportunitiesPage = () => {
   const { user } = useAuth();
 
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [adminStatusFilter, setAdminStatusFilter] =
+    useState<AdminReviewStatusFilter>("pending_approval");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<OpportunityType>("internship");
@@ -34,11 +49,13 @@ export const OpportunitiesPage = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reviewingAction, setReviewingAction] = useState<string | null>(null);
 
-  // Load opportunities owned by the signed-in mentor.
+  // Load opportunity data for the signed-in user's workflow.
   useEffect(() => {
     const loadOpportunities = async () => {
-      if (user?.role !== "mentor") {
+      if (!user || user.role === "student") {
+        setOpportunities([]);
         setIsLoading(false);
         return;
       }
@@ -48,7 +65,12 @@ export const OpportunitiesPage = () => {
 
       try {
         const response =
-          await api.get<MyOpportunitiesResponse>("/opportunities/mine");
+          user.role === "admin"
+            ? await api.get<OpportunityListResponse>(
+                `/opportunities/admin/review?status=${adminStatusFilter}&limit=50`,
+              )
+            : await api.get<MyOpportunitiesResponse>("/opportunities/mine");
+
         setOpportunities(response.data.opportunities);
       } catch (loadError) {
         setError(apiErrorMessage(loadError));
@@ -58,7 +80,7 @@ export const OpportunitiesPage = () => {
     };
 
     void loadOpportunities();
-  }, [user]);
+  }, [adminStatusFilter, user]);
 
   const resetForm = () => {
     setTitle("");
@@ -104,12 +126,155 @@ export const OpportunitiesPage = () => {
     }
   };
 
+  const handleAdminDecision = async (
+    opportunity: Opportunity,
+    action: "approve" | "reject",
+  ) => {
+    setError("");
+    setSuccessMessage("");
+    setReviewingAction(`${opportunity.id}:${action}`);
+
+    try {
+      const response = await api.post<OpportunityResponse>(
+        `/opportunities/${opportunity.id}/${action}`,
+      );
+      const updatedOpportunity = response.data.opportunity;
+
+      setOpportunities((current) => {
+        if (
+          adminStatusFilter !== "all" &&
+          updatedOpportunity.status !== adminStatusFilter
+        ) {
+          return current.filter((item) => item.id !== updatedOpportunity.id);
+        }
+
+        return current.map((item) =>
+          item.id === updatedOpportunity.id ? updatedOpportunity : item,
+        );
+      });
+      setSuccessMessage(
+        `${updatedOpportunity.title} ${
+          action === "approve" ? "approved" : "rejected"
+        }.`,
+      );
+    } catch (decisionError) {
+      setError(apiErrorMessage(decisionError));
+    } finally {
+      setReviewingAction(null);
+    }
+  };
+
+  if (user?.role === "admin") {
+    return (
+      <main className="page-content">
+        <section className="page-panel">
+          <div className="page-heading">
+            <div>
+              <h2>Approvals</h2>
+              <p>Review opportunities before they appear in public browsing.</p>
+            </div>
+          </div>
+
+          {error ? <p className="form-error">{error}</p> : null}
+          {successMessage ? (
+            <p className="form-success">{successMessage}</p>
+          ) : null}
+
+          <label>
+            Review status
+            <select
+              value={adminStatusFilter}
+              onChange={(event) =>
+                setAdminStatusFilter(
+                  event.target.value as AdminReviewStatusFilter,
+                )
+              }
+            >
+              {adminReviewStatusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {isLoading ? <p>Loading opportunities...</p> : null}
+
+          {!isLoading && opportunities.length === 0 ? (
+            <p>No opportunities found for this review filter.</p>
+          ) : null}
+
+          <div className="opportunity-grid">
+            {opportunities.map((opportunity) => (
+              <article className="opportunity-card" key={opportunity.id}>
+                <div>
+                  <h3>{opportunity.title}</h3>
+                  <StatusBadge status={opportunity.status} />
+                </div>
+
+                <p>{opportunity.description}</p>
+
+                <dl className="details-list">
+                  <div>
+                    <dt>Owner</dt>
+                    <dd>{opportunity.owner.fullName}</dd>
+                  </div>
+                  <div>
+                    <dt>Type</dt>
+                    <dd>{opportunity.type}</dd>
+                  </div>
+                  <div>
+                    <dt>Capacity</dt>
+                    <dd>{opportunity.capacity}</dd>
+                  </div>
+                  <div>
+                    <dt>Deadline</dt>
+                    <dd>
+                      {new Date(opportunity.deadline).toLocaleDateString()}
+                    </dd>
+                  </div>
+                </dl>
+
+                <button
+                  type="button"
+                  disabled={
+                    reviewingAction !== null ||
+                    opportunity.status === "published"
+                  }
+                  onClick={() =>
+                    void handleAdminDecision(opportunity, "approve")
+                  }
+                >
+                  {reviewingAction === `${opportunity.id}:approve`
+                    ? "Approving..."
+                    : "Approve"}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={
+                    reviewingAction !== null || opportunity.status === "rejected"
+                  }
+                  onClick={() => void handleAdminDecision(opportunity, "reject")}
+                >
+                  {reviewingAction === `${opportunity.id}:reject`
+                    ? "Rejecting..."
+                    : "Reject"}
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (user?.role !== "mentor") {
     return (
       <main className="page-content">
         <section className="page-panel">
           <h2>Opportunities</h2>
-          <p>Admin opportunity approvals will be added in a later task.</p>
+          <p>This page is available to mentors and admins.</p>
         </section>
       </main>
     );
