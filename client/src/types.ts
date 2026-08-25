@@ -77,3 +77,19 @@ export type AuthResponse = {
   token: string;
   user: User;
 };
+
+export type RegisterPayload = {
+  fullName: string;
+  email: string;
+  password: string;
+  role: Extract<Role, "student" | "mentor">;
+};
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type CurrentUserResponse = {
+  user: User;
+};
