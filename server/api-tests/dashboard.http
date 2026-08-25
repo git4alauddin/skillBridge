@@ -1,0 +1,25 @@
+# Dashboard checks
+
+# Fixtures
+
+### Register dashboard student
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Dashboard Test Student",
+  "email": "dashboard-student-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "student"
+}
+
+> {% client.global.set("dashboardStudentToken", response.body.token); %}
+
+# Access
+
+### Get dashboard as student
+GET http://localhost:4000/api/dashboard
+Authorization: Bearer {{dashboardStudentToken}}
+
+### Reject dashboard without token
+GET http://localhost:4000/api/dashboard
