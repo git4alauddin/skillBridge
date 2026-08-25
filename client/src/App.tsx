@@ -6,6 +6,7 @@ import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { AuthPage } from "./pages/AuthPage";
 import { BrowsePage } from "./pages/BrowsePage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { OpportunitiesPage } from "./pages/OpportunitiesPage";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route index element={<DashboardPage />} />
         <Route path="browse" element={<BrowsePage />} />
         <Route path="applications" element={<ApplicationsPage />} />
+        <Route path="opportunities" element={<OpportunitiesPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

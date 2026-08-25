@@ -112,3 +112,22 @@ export type ApplicationListResponse = {
 export type WithdrawApplicationResponse = {
   application: Application;
 };
+
+export type CreateOpportunityPayload = {
+  title: string;
+  description: string;
+  type: OpportunityType;
+  capacity: number;
+  deadline: string;
+  startDate?: string;
+  imageUrl?: string;
+  attachmentUrl?: string;
+};
+
+export type OpportunityResponse = {
+  opportunity: Opportunity;
+};
+
+export type MyOpportunitiesResponse = {
+  opportunities: Opportunity[];
+};
