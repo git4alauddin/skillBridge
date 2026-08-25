@@ -23,10 +23,41 @@ function App() {
         }
       >
         <Route index element={<DashboardPage />} />
-        <Route path="browse" element={<BrowsePage />} />
-        <Route path="applications" element={<ApplicationsPage />} />
-        <Route path="opportunities" element={<OpportunitiesPage />} />
-        <Route path="users" element={<UsersPage />} />
+        <Route
+          path="browse"
+          element={
+            <RequireAuth allowedRoles={["student"]}>
+              <BrowsePage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="applications"
+          element={
+            <RequireAuth allowedRoles={["student", "mentor", "admin"]}>
+              <ApplicationsPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="opportunities"
+          element={
+            <RequireAuth allowedRoles={["mentor", "admin"]}>
+              <OpportunitiesPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="users"
+          element={
+            <RequireAuth allowedRoles={["admin"]}>
+              <UsersPage />
+            </RequireAuth>
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
