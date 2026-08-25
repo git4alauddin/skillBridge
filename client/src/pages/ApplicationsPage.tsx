@@ -2,18 +2,38 @@ import { useEffect, useState } from "react";
 
 import { api, apiErrorMessage } from "../api";
 import { StatusBadge } from "../components/StatusBadge";
+import { useAuth } from "../state/useAuth";
 import type {
   Application,
   ApplicationListResponse,
-  WithdrawApplicationResponse,
+  ApplicationResponse,
+  ApplicationStatus,
 } from "../types";
 
+const mentorReviewStatuses: ApplicationStatus[] = [
+  "shortlisted",
+  "selected",
+  "rejected",
+  "waitlisted",
+  "completed",
+];
+
+const defaultReviewStatus = (status: ApplicationStatus): ApplicationStatus =>
+  mentorReviewStatuses.includes(status) ? status : "shortlisted";
+
 export const ApplicationsPage = () => {
+  const { user } = useAuth();
+
   const [applications, setApplications] = useState<Application[]>([]);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [reviewStatuses, setReviewStatuses] = useState<
+    Record<string, ApplicationStatus>
+  >({});
+  const [mentorNotes, setMentorNotes] = useState<Record<string, string>>({});
 
   // Load applications visible to the signed-in user.
   useEffect(() => {
@@ -23,7 +43,25 @@ export const ApplicationsPage = () => {
 
       try {
         const response = await api.get<ApplicationListResponse>("/applications");
-        setApplications(response.data.applications);
+        const loadedApplications = response.data.applications;
+
+        setApplications(loadedApplications);
+        setReviewStatuses(
+          Object.fromEntries(
+            loadedApplications.map((application) => [
+              application.id,
+              defaultReviewStatus(application.status),
+            ]),
+          ),
+        );
+        setMentorNotes(
+          Object.fromEntries(
+            loadedApplications.map((application) => [
+              application.id,
+              application.mentorNote || "",
+            ]),
+          ),
+        );
       } catch (loadError) {
         setError(apiErrorMessage(loadError));
       } finally {
@@ -40,7 +78,7 @@ export const ApplicationsPage = () => {
     setWithdrawingId(application.id);
 
     try {
-      const response = await api.post<WithdrawApplicationResponse>(
+      const response = await api.post<ApplicationResponse>(
         `/applications/${application.id}/withdraw`,
       );
 
@@ -57,13 +95,54 @@ export const ApplicationsPage = () => {
     }
   };
 
+  const handleStatusUpdate = async (application: Application) => {
+    setError("");
+    setSuccessMessage("");
+    setUpdatingId(application.id);
+
+    try {
+      const response = await api.patch<ApplicationResponse>(
+        `/applications/${application.id}/status`,
+        {
+          status:
+            reviewStatuses[application.id] ??
+            defaultReviewStatus(application.status),
+          mentorNote: mentorNotes[application.id] || undefined,
+        },
+      );
+
+      setApplications((current) =>
+        current.map((item) =>
+          item.id === application.id ? response.data.application : item,
+        ),
+      );
+      setReviewStatuses((current) => ({
+        ...current,
+        [application.id]: defaultReviewStatus(response.data.application.status),
+      }));
+      setMentorNotes((current) => ({
+        ...current,
+        [application.id]: response.data.application.mentorNote || "",
+      }));
+      setSuccessMessage(`Updated application for ${application.student.fullName}.`);
+    } catch (updateError) {
+      setError(apiErrorMessage(updateError));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   return (
     <main className="page-content">
       <section className="page-panel">
         <div className="page-heading">
           <div>
             <h2>Applications</h2>
-            <p>Track submitted applications and their review status.</p>
+            <p>
+              {user?.role === "mentor"
+                ? "Review applications for your opportunities."
+                : "Track submitted applications and their review status."}
+            </p>
           </div>
         </div>
 
@@ -81,6 +160,8 @@ export const ApplicationsPage = () => {
         <div className="application-list">
           {applications.map((application) => {
             const isWithdrawn = application.status === "withdrawn";
+            const canReview =
+              user?.role === "mentor" && application.status !== "withdrawn";
 
             return (
               <article className="application-card" key={application.id}>
@@ -96,6 +177,12 @@ export const ApplicationsPage = () => {
                     <dt>Type</dt>
                     <dd>{application.opportunity.type}</dd>
                   </div>
+                  {user?.role === "mentor" ? (
+                    <div>
+                      <dt>Student</dt>
+                      <dd>{application.student.fullName}</dd>
+                    </div>
+                  ) : null}
                   <div>
                     <dt>Deadline</dt>
                     <dd>
@@ -120,17 +207,70 @@ export const ApplicationsPage = () => {
                   <p>Mentor note: {application.mentorNote}</p>
                 ) : null}
 
-                <button
-                  type="button"
-                  disabled={isWithdrawn || withdrawingId === application.id}
-                  onClick={() => void handleWithdraw(application)}
-                >
-                  {isWithdrawn
-                    ? "Withdrawn"
-                    : withdrawingId === application.id
-                      ? "Withdrawing..."
-                      : "Withdraw"}
-                </button>
+                {user?.role === "student" ? (
+                  <button
+                    type="button"
+                    disabled={isWithdrawn || withdrawingId === application.id}
+                    onClick={() => void handleWithdraw(application)}
+                  >
+                    {isWithdrawn
+                      ? "Withdrawn"
+                      : withdrawingId === application.id
+                        ? "Withdrawing..."
+                        : "Withdraw"}
+                  </button>
+                ) : null}
+
+                {canReview ? (
+                  <div className="review-controls">
+                    <label>
+                      Review status
+                      <select
+                        value={
+                          reviewStatuses[application.id] ??
+                          defaultReviewStatus(application.status)
+                        }
+                        onChange={(event) =>
+                          setReviewStatuses((current) => ({
+                            ...current,
+                            [application.id]: event.target
+                              .value as ApplicationStatus,
+                          }))
+                        }
+                      >
+                        {mentorReviewStatuses.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      Mentor note
+                      <textarea
+                        value={mentorNotes[application.id] || ""}
+                        onChange={(event) =>
+                          setMentorNotes((current) => ({
+                            ...current,
+                            [application.id]: event.target.value,
+                          }))
+                        }
+                        rows={3}
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      disabled={updatingId === application.id}
+                      onClick={() => void handleStatusUpdate(application)}
+                    >
+                      {updatingId === application.id
+                        ? "Updating..."
+                        : "Update review"}
+                    </button>
+                  </div>
+                ) : null}
               </article>
             );
           })}

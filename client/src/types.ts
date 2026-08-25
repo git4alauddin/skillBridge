@@ -109,7 +109,7 @@ export type ApplicationListResponse = {
   applications: Application[];
 };
 
-export type WithdrawApplicationResponse = {
+export type ApplicationResponse = {
   application: Application;
 };
 
