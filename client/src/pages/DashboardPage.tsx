@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api, apiErrorMessage } from "../api";
+import { MetricGrid } from "../components/MetricGrid";
 import type { DashboardResponse } from "../types";
 
 export const DashboardPage = () => {
@@ -43,15 +44,7 @@ export const DashboardPage = () => {
           <h2>Dashboard</h2>
           <p>{dashboard.role} overview</p>
         </div>
-
-        <div className="metric-grid">
-          {Object.entries(dashboard.metrics).map(([label, value]) => (
-            <article className="metric-card" key={label}>
-              <span>{label}</span>
-              <strong>{value}</strong>
-            </article>
-          ))}
-        </div>
+        <MetricGrid metrics={dashboard.metrics} />
       </section>
     </main>
   );
