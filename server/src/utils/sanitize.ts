@@ -1,3 +1,4 @@
+import type { Application } from "../entities/Application.js";
 import type { Category } from "../entities/Category.js";
 import type { Opportunity } from "../entities/Opportunity.js";
 import type { User } from "../entities/User.js";
@@ -31,6 +32,17 @@ export type PublicOpportunity = {
   status: Opportunity["status"];
   owner: PublicUser;
   category: PublicCategory | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type PublicApplication = {
+  id: string;
+  status: Application["status"];
+  coverNote: string | null;
+  mentorNote: string | null;
+  student: PublicUser;
+  opportunity: PublicOpportunity;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -78,5 +90,21 @@ export const toPublicOpportunity = (
       : null,
     createdAt: opportunity.createdAt,
     updatedAt: opportunity.updatedAt,
+  };
+};
+
+// Return application data with sanitized student and opportunity.
+export const toPublicApplication = (
+  application: Application
+): PublicApplication => {
+  return {
+    id: application.id,
+    status: application.status,
+    coverNote: application.coverNote,
+    mentorNote: application.mentorNote,
+    student: toPublicUser(application.student),
+    opportunity: toPublicOpportunity(application.opportunity),
+    createdAt: application.createdAt,
+    updatedAt: application.updatedAt,
   };
 };
