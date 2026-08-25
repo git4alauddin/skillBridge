@@ -62,7 +62,7 @@ Authorization: Bearer {{applicationMentorToken}}
   "title": "Application Workflow Internship",
   "description": "Build and test the student application workflow for published opportunities.",
   "type": "internship",
-  "capacity": 2,
+  "capacity": 1,
   "deadline": "2027-08-10T23:59:00.000Z",
   "startDate": "2027-08-20T09:00:00.000Z",
   "imageUrl": "",
@@ -106,8 +106,6 @@ Authorization: Bearer {{applicationStudentToken}}
   "coverNote": "Trying to apply again."
 }
 
-# Mentor review
-
 ### List applications as mentor
 GET http://localhost:4000/api/applications
 Authorization: Bearer {{applicationMentorToken}}
@@ -144,6 +142,37 @@ Authorization: Bearer {{applicationAdminToken}}
 {
   "status": "waitlisted",
   "mentorNote": "Admin review update."
+}
+
+### Apply as other student
+POST http://localhost:4000/api/opportunities/{{applicationOpportunityId}}/apply
+Content-Type: application/json
+Authorization: Bearer {{otherApplicationStudentToken}}
+
+{
+  "coverNote": "I am also interested in this opportunity."
+}
+
+> {% client.global.set("otherApplicationId", response.body.application.id); %}
+
+### Select first application
+PATCH http://localhost:4000/api/applications/{{applicationId}}/status
+Content-Type: application/json
+Authorization: Bearer {{applicationMentorToken}}
+
+{
+  "status": "selected",
+  "mentorNote": "Selected for the available slot."
+}
+
+### Reject selection after capacity reached
+PATCH http://localhost:4000/api/applications/{{otherApplicationId}}/status
+Content-Type: application/json
+Authorization: Bearer {{applicationMentorToken}}
+
+{
+  "status": "selected",
+  "mentorNote": "This should fail because capacity is full."
 }
 
 ### Reject invalid status

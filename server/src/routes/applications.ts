@@ -213,6 +213,25 @@ applicationsRouter.patch(
       });
     }
 
+    // Enforce capacity only when selecting a new application.
+    if (
+      parsed.data.status === ApplicationStatus.Selected &&
+      application.status !== ApplicationStatus.Selected
+    ) {
+      const selectedCount = await applicationRepository.count({
+        where: {
+          opportunity: { id: application.opportunity.id },
+          status: ApplicationStatus.Selected,
+        },
+      });
+
+      if (selectedCount >= application.opportunity.capacity) {
+        return res.status(400).json({
+          message: "Opportunity capacity has already been reached",
+        });
+      }
+    }
+
     application.status = parsed.data.status;
     application.mentorNote =
       parsed.data.mentorNote === undefined
