@@ -11,6 +11,7 @@ import { healthRouter } from "./routes/health.js";
 import { opportunitiesRouter } from "./routes/opportunities.js";
 import { applicationsRouter } from "./routes/applications.js";
 import { dashboardRouter } from "./routes/dashboard.js";
+import { usersRouter } from "./routes/users.js";
 
 // Express app setup
 export const app = express();
@@ -39,6 +40,7 @@ app.use(healthRouter);
 app.use(opportunitiesRouter);
 app.use(applicationsRouter);
 app.use(dashboardRouter);
+app.use(usersRouter);
 
 // Fallback handlers
 app.use(notFoundHandler);

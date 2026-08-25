@@ -94,6 +94,18 @@ export type CurrentUserResponse = {
   user: User;
 };
 
+export type UserListResponse = {
+  users: User[];
+};
+
+export type UserResponse = {
+  user: User;
+};
+
+export type UpdateUserPayload = {
+  status: UserStatus;
+};
+
 export type OpportunityListResponse = {
   opportunities: Opportunity[];
   total: number;

@@ -1,0 +1,97 @@
+# User management checks
+
+# Setup data used by the rest of this file.
+# Fixtures
+
+# Admin must already exist from the RBAC setup SQL in rbac.http.
+### Login admin
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "rbac-admin@example.com",
+  "password": "Password123"
+}
+
+> {% client.global.set("usersAdminToken", response.body.token); %}
+
+### Register student
+POST http://localhost:4000/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Users Test Student",
+  "email": "users-student-{{$timestamp}}@example.com",
+  "password": "Password123",
+  "role": "student"
+}
+
+> {% client.global.set("usersStudentToken", response.body.token); client.global.set("managedUserId", response.body.user.id); %}
+
+# List users
+
+### Reject list users without token
+GET http://localhost:4000/api/users
+
+### Reject list users as student
+GET http://localhost:4000/api/users
+Authorization: Bearer {{usersStudentToken}}
+
+### List users as admin
+GET http://localhost:4000/api/users
+Authorization: Bearer {{usersAdminToken}}
+
+# Update user status
+
+### Suspend user
+PATCH http://localhost:4000/api/users/{{managedUserId}}
+Content-Type: application/json
+Authorization: Bearer {{usersAdminToken}}
+
+{
+  "status": "suspended"
+}
+
+### Activate user
+PATCH http://localhost:4000/api/users/{{managedUserId}}
+Content-Type: application/json
+Authorization: Bearer {{usersAdminToken}}
+
+{
+  "status": "active"
+}
+
+### Reject update without token
+PATCH http://localhost:4000/api/users/{{managedUserId}}
+Content-Type: application/json
+
+{
+  "status": "suspended"
+}
+
+### Reject update as student
+PATCH http://localhost:4000/api/users/{{managedUserId}}
+Content-Type: application/json
+Authorization: Bearer {{usersStudentToken}}
+
+{
+  "status": "suspended"
+}
+
+### Reject invalid status
+PATCH http://localhost:4000/api/users/{{managedUserId}}
+Content-Type: application/json
+Authorization: Bearer {{usersAdminToken}}
+
+{
+  "status": "disabled"
+}
+
+### Reject unknown user
+PATCH http://localhost:4000/api/users/22222222-2222-4222-8222-222222222222
+Content-Type: application/json
+Authorization: Bearer {{usersAdminToken}}
+
+{
+  "status": "active"
+}
