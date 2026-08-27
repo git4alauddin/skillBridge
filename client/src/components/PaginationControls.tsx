@@ -15,6 +15,12 @@ export const PaginationControls = ({
     return null;
   }
 
+  const firstItem = (pagination.page - 1) * pagination.limit + 1;
+  const lastItem = Math.min(
+    pagination.page * pagination.limit,
+    pagination.total,
+  );
+
   return (
     <div className="pagination-controls">
       <button
@@ -26,7 +32,12 @@ export const PaginationControls = ({
       </button>
 
       <span className="pagination-summary">
-        Page {pagination.page} of {pagination.totalPages}
+        <span>
+          Page {pagination.page} of {pagination.totalPages}
+        </span>
+        <span>
+          Showing {firstItem}-{lastItem} of {pagination.total}
+        </span>
       </span>
 
       <button

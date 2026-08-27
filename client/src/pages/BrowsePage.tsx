@@ -113,38 +113,38 @@ export const BrowsePage = () => {
             <h2>Browse Opportunities</h2>
             <p>Find published opportunities and apply as a student.</p>
           </div>
-        </div>
 
-        <div className="filter-row">
-          <label>
-            Search
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setPage(1);
-              }}
-              placeholder="Search by title, description, or category"
-            />
-          </label>
+          <div className="filter-row">
+            <label>
+              Search
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search by title, description, or category"
+              />
+            </label>
 
-          <label>
-            Type
-            <select
-              value={type}
-              onChange={(event) => {
-                setType(event.target.value as OpportunityType | "");
-                setPage(1);
-              }}
-            >
-              {opportunityTypes.map((item) => (
-                <option key={item.label} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label>
+              Type
+              <select
+                value={type}
+                onChange={(event) => {
+                  setType(event.target.value as OpportunityType | "");
+                  setPage(1);
+                }}
+              >
+                {opportunityTypes.map((item) => (
+                  <option key={item.label} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
         </div>
 
         {error ? <p className="form-error">{error}</p> : null}
