@@ -347,6 +347,24 @@ h3 {
   color: #cbd5e1;
 }
 
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+.pagination-controls button {
+  min-width: 96px;
+}
+
+.pagination-summary {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
 /* Mentor workflows */
 .opportunity-form {
   display: grid;
@@ -539,8 +557,18 @@ h3 {
   }
 
   .admin-actions button,
+  .pagination-controls button,
   .review-controls button {
     width: 100%;
+  }
+
+  .pagination-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination-summary {
+    text-align: center;
   }
 
   .details-list dd,

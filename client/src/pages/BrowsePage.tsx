@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { api, apiErrorMessage } from "../api";
+import { PaginationControls } from "../components/PaginationControls";
 import { StatusBadge } from "../components/StatusBadge";
 import type {
   ApplyResponse,
   Opportunity,
   OpportunityListResponse,
   OpportunityType,
+  PaginationMeta,
 } from "../types";
 
 const opportunityTypes: Array<{ label: string; value: OpportunityType | "" }> = [
@@ -18,10 +20,14 @@ const opportunityTypes: Array<{ label: string; value: OpportunityType | "" }> = 
   { label: "Collaboration", value: "collaboration" },
 ];
 
+const pageSize = 3;
+
 export const BrowsePage = () => {
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [search, setSearch] = useState("");
   const [type, setType] = useState<OpportunityType | "">("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
 
   const [coverNotes, setCoverNotes] = useState<Record<string, string>>({});
   const [appliedOpportunityIds, setAppliedOpportunityIds] = useState<string[]>(
@@ -44,8 +50,11 @@ export const BrowsePage = () => {
       params.set("type", type);
     }
 
+    params.set("page", String(page));
+    params.set("limit", String(pageSize));
+
     return params.toString();
-  }, [search, type]);
+  }, [page, search, type]);
 
   // Load published opportunities using the current search and type filters.
   useEffect(() => {
@@ -58,8 +67,10 @@ export const BrowsePage = () => {
           `/opportunities${query ? `?${query}` : ""}`,
         );
         setOpportunities(response.data.opportunities);
+        setPagination(response.data.pagination);
       } catch (loadError) {
         setError(apiErrorMessage(loadError));
+        setPagination(null);
       } finally {
         setIsLoading(false);
       }
@@ -110,7 +121,10 @@ export const BrowsePage = () => {
             <input
               type="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
               placeholder="Search by title, description, or category"
             />
           </label>
@@ -119,9 +133,10 @@ export const BrowsePage = () => {
             Type
             <select
               value={type}
-              onChange={(event) =>
-                setType(event.target.value as OpportunityType | "")
-              }
+              onChange={(event) => {
+                setType(event.target.value as OpportunityType | "");
+                setPage(1);
+              }}
             >
               {opportunityTypes.map((item) => (
                 <option key={item.label} value={item.value}>
@@ -200,6 +215,12 @@ export const BrowsePage = () => {
             );
           })}
         </div>
+
+        <PaginationControls
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+        />
       </section>
     </main>
   );

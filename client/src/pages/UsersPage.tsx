@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { api, apiErrorMessage } from "../api";
+import { PaginationControls } from "../components/PaginationControls";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAuth } from "../state/useAuth";
 import type {
+  PaginationMeta,
   UpdateUserPayload,
   User,
   UserListResponse,
@@ -11,10 +13,14 @@ import type {
   UserStatus,
 } from "../types";
 
+const pageSize = 3;
+
 export const UsersPage = () => {
   const { user: currentUser } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +31,7 @@ export const UsersPage = () => {
     const loadUsers = async () => {
       if (currentUser?.role !== "admin") {
         setUsers([]);
+        setPagination(null);
         setIsLoading(false);
         return;
       }
@@ -33,17 +40,21 @@ export const UsersPage = () => {
       setIsLoading(true);
 
       try {
-        const response = await api.get<UserListResponse>("/users");
+        const response = await api.get<UserListResponse>(
+          `/users?page=${page}&limit=${pageSize}`,
+        );
         setUsers(response.data.users);
+        setPagination(response.data.pagination);
       } catch (loadError) {
         setError(apiErrorMessage(loadError));
+        setPagination(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     void loadUsers();
-  }, [currentUser]);
+  }, [currentUser, page]);
 
   const handleStatusChange = async (user: User, status: UserStatus) => {
     setError("");
@@ -156,6 +167,12 @@ export const UsersPage = () => {
             );
           })}
         </div>
+
+        <PaginationControls
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+        />
       </section>
     </main>
   );

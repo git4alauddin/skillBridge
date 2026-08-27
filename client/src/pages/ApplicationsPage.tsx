@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api, apiErrorMessage } from "../api";
+import { PaginationControls } from "../components/PaginationControls";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAuth } from "../state/useAuth";
 import type {
@@ -8,6 +9,7 @@ import type {
   ApplicationListResponse,
   ApplicationResponse,
   ApplicationStatus,
+  PaginationMeta,
 } from "../types";
 
 const mentorReviewStatuses: ApplicationStatus[] = [
@@ -21,10 +23,14 @@ const mentorReviewStatuses: ApplicationStatus[] = [
 const defaultReviewStatus = (status: ApplicationStatus): ApplicationStatus =>
   mentorReviewStatuses.includes(status) ? status : "shortlisted";
 
+const pageSize = 3;
+
 export const ApplicationsPage = () => {
   const { user } = useAuth();
 
   const [applications, setApplications] = useState<Application[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -42,10 +48,13 @@ export const ApplicationsPage = () => {
       setIsLoading(true);
 
       try {
-        const response = await api.get<ApplicationListResponse>("/applications");
+        const response = await api.get<ApplicationListResponse>(
+          `/applications?page=${page}&limit=${pageSize}`,
+        );
         const loadedApplications = response.data.applications;
 
         setApplications(loadedApplications);
+        setPagination(response.data.pagination);
         setReviewStatuses(
           Object.fromEntries(
             loadedApplications.map((application) => [
@@ -64,13 +73,14 @@ export const ApplicationsPage = () => {
         );
       } catch (loadError) {
         setError(apiErrorMessage(loadError));
+        setPagination(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     void loadApplications();
-  }, []);
+  }, [page]);
 
   const handleWithdraw = async (application: Application) => {
     setError("");
@@ -275,6 +285,12 @@ export const ApplicationsPage = () => {
             );
           })}
         </div>
+
+        <PaginationControls
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+        />
       </section>
     </main>
   );

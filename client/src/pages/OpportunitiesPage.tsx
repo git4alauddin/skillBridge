@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 
 import { api, apiErrorMessage } from "../api";
+import { PaginationControls } from "../components/PaginationControls";
 import { StatusBadge } from "../components/StatusBadge";
 import { useAuth } from "../state/useAuth";
 import type {
@@ -11,6 +12,7 @@ import type {
   OpportunityResponse,
   OpportunityStatus,
   OpportunityType,
+  PaginationMeta,
 } from "../types";
 
 const opportunityTypes: OpportunityType[] = [
@@ -32,10 +34,14 @@ const adminReviewStatusOptions: AdminReviewStatusFilter[] = [
   "closed",
 ];
 
+const pageSize = 3;
+
 export const OpportunitiesPage = () => {
   const { user } = useAuth();
 
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   const [adminStatusFilter, setAdminStatusFilter] =
     useState<AdminReviewStatusFilter>("pending_approval");
   const [title, setTitle] = useState("");
@@ -56,6 +62,7 @@ export const OpportunitiesPage = () => {
     const loadOpportunities = async () => {
       if (!user || user.role === "student") {
         setOpportunities([]);
+        setPagination(null);
         setIsLoading(false);
         return;
       }
@@ -67,20 +74,24 @@ export const OpportunitiesPage = () => {
         const response =
           user.role === "admin"
             ? await api.get<OpportunityListResponse>(
-                `/opportunities/admin/review?status=${adminStatusFilter}&limit=50`,
+                `/opportunities/admin/review?status=${adminStatusFilter}&page=${page}&limit=${pageSize}`,
               )
-            : await api.get<MyOpportunitiesResponse>("/opportunities/mine");
+            : await api.get<MyOpportunitiesResponse>(
+                `/opportunities/mine?page=${page}&limit=${pageSize}`,
+              );
 
         setOpportunities(response.data.opportunities);
+        setPagination(response.data.pagination);
       } catch (loadError) {
         setError(apiErrorMessage(loadError));
+        setPagination(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     void loadOpportunities();
-  }, [adminStatusFilter, user]);
+  }, [adminStatusFilter, page, user]);
 
   const resetForm = () => {
     setTitle("");
@@ -184,11 +195,12 @@ export const OpportunitiesPage = () => {
             Review status
             <select
               value={adminStatusFilter}
-              onChange={(event) =>
+              onChange={(event) => {
                 setAdminStatusFilter(
                   event.target.value as AdminReviewStatusFilter,
-                )
-              }
+                );
+                setPage(1);
+              }}
             >
               {adminReviewStatusOptions.map((status) => (
                 <option key={status} value={status}>
@@ -270,6 +282,12 @@ export const OpportunitiesPage = () => {
               </article>
             ))}
           </div>
+
+          <PaginationControls
+            isLoading={isLoading}
+            pagination={pagination}
+            onPageChange={setPage}
+          />
         </section>
       </main>
     );
@@ -412,6 +430,12 @@ export const OpportunitiesPage = () => {
             </article>
           ))}
         </div>
+
+        <PaginationControls
+          isLoading={isLoading}
+          pagination={pagination}
+          onPageChange={setPage}
+        />
       </section>
     </main>
   );

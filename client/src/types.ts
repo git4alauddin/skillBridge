@@ -73,6 +73,15 @@ export type DashboardResponse = {
   metrics: Record<string, number>;
 };
 
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
 export type AuthResponse = {
   token: string;
   user: User;
@@ -96,6 +105,7 @@ export type CurrentUserResponse = {
 
 export type UserListResponse = {
   users: User[];
+  pagination: PaginationMeta;
 };
 
 export type UserResponse = {
@@ -108,9 +118,7 @@ export type UpdateUserPayload = {
 
 export type OpportunityListResponse = {
   opportunities: Opportunity[];
-  total: number;
-  page: number;
-  limit: number;
+  pagination: PaginationMeta;
 };
 
 export type ApplyResponse = {
@@ -119,6 +127,7 @@ export type ApplyResponse = {
 
 export type ApplicationListResponse = {
   applications: Application[];
+  pagination: PaginationMeta;
 };
 
 export type ApplicationResponse = {
@@ -142,4 +151,5 @@ export type OpportunityResponse = {
 
 export type MyOpportunitiesResponse = {
   opportunities: Opportunity[];
+  pagination: PaginationMeta;
 };
