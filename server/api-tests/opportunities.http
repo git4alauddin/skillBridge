@@ -115,7 +115,15 @@ Authorization: Bearer {{opportunityMentorToken}}
 # Mentor management
 
 ### List mine
-GET http://localhost:4000/api/opportunities/mine
+GET http://localhost:4000/api/opportunities/mine?page=1&limit=5
+Authorization: Bearer {{opportunityMentorToken}}
+
+### Reject list mine invalid page
+GET http://localhost:4000/api/opportunities/mine?page=0
+Authorization: Bearer {{opportunityMentorToken}}
+
+### Reject list mine invalid limit
+GET http://localhost:4000/api/opportunities/mine?limit=100
 Authorization: Bearer {{opportunityMentorToken}}
 
 ### Reject list mine without token
@@ -190,11 +198,19 @@ GET http://localhost:4000/api/opportunities/admin/review
 Authorization: Bearer {{opportunityStudentToken}}
 
 ### List pending for review
-GET http://localhost:4000/api/opportunities/admin/review
+GET http://localhost:4000/api/opportunities/admin/review?page=1&limit=5
 Authorization: Bearer {{opportunityAdminToken}}
 
 ### List all for review
 GET http://localhost:4000/api/opportunities/admin/review?status=all&limit=50
+Authorization: Bearer {{opportunityAdminToken}}
+
+### Reject invalid review page
+GET http://localhost:4000/api/opportunities/admin/review?page=0
+Authorization: Bearer {{opportunityAdminToken}}
+
+### Reject invalid review limit
+GET http://localhost:4000/api/opportunities/admin/review?limit=100
 Authorization: Bearer {{opportunityAdminToken}}
 
 ### Reject invalid review status

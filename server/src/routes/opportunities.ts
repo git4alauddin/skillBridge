@@ -15,6 +15,11 @@ import {
   authorize,
   rolePermissions,
 } from "../middleware/auth.js";
+import {
+  createPaginationMeta,
+  createPaginationQuerySchema,
+  getPaginationParams,
+} from "../utils/pagination.js";
 import { toPublicOpportunity } from "../utils/sanitize.js";
 
 // Router setup
@@ -60,8 +65,7 @@ const publicOpportunityListQuerySchema = z.object({
       OpportunityType.Collaboration,
     ])
     .optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(50).default(12),
+  ...createPaginationQuerySchema({ defaultLimit: 12 }).shape,
 });
 
 const adminOpportunityReviewQuerySchema = z.object({
@@ -75,8 +79,11 @@ const adminOpportunityReviewQuerySchema = z.object({
       OpportunityStatus.Rejected,
     ])
     .default(OpportunityStatus.Pending),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(50).default(50),
+  ...createPaginationQuerySchema({ defaultLimit: 50 }).shape,
+});
+
+const mentorOpportunityListQuerySchema = createPaginationQuerySchema({
+  defaultLimit: 12,
 });
 
 // Opportunity routes
@@ -154,17 +161,34 @@ opportunitiesRouter.get(
       });
     }
 
+    const parsed = mentorOpportunityListQuerySchema.safeParse(req.query);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Invalid opportunity filters",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const paginationParams = getPaginationParams(
+      parsed.data.page,
+      parsed.data.limit
+    );
+
     const opportunityRepository = AppDataSource.getRepository(Opportunity);
 
     // Fetch only records owned by this mentor.
-    const opportunities = await opportunityRepository.find({
+    const [opportunities, total] = await opportunityRepository.findAndCount({
       where: { owner: { id: req.user.id } },
       relations: { owner: true },
       order: { createdAt: "DESC" },
+      skip: paginationParams.skip,
+      take: paginationParams.take,
     });
 
     return res.json({
       opportunities: opportunities.map(toPublicOpportunity),
+      pagination: createPaginationMeta(total, paginationParams),
     });
   }
 );
@@ -184,7 +208,11 @@ opportunitiesRouter.get(
       });
     }
 
-    const { status, page, limit } = parsed.data;
+    const { status } = parsed.data;
+    const paginationParams = getPaginationParams(
+      parsed.data.page,
+      parsed.data.limit
+    );
     const opportunityRepository = AppDataSource.getRepository(Opportunity);
 
     const query = opportunityRepository
@@ -192,8 +220,8 @@ opportunitiesRouter.get(
       .leftJoinAndSelect("opportunity.owner", "owner")
       .leftJoinAndSelect("opportunity.category", "category")
       .orderBy("opportunity.createdAt", "DESC")
-      .take(limit)
-      .skip((page - 1) * limit);
+      .take(paginationParams.take)
+      .skip(paginationParams.skip);
 
     if (status !== "all") {
       query.where("opportunity.status = :status", { status });
@@ -203,9 +231,7 @@ opportunitiesRouter.get(
 
     return res.json({
       opportunities: opportunities.map(toPublicOpportunity),
-      total,
-      page,
-      limit,
+      pagination: createPaginationMeta(total, paginationParams),
     });
   }
 );
@@ -380,7 +406,11 @@ opportunitiesRouter.get("/api/opportunities", async (req, res) => {
     });
   }
 
-  const { q, type, page, limit } = parsed.data;
+  const { q, type } = parsed.data;
+  const paginationParams = getPaginationParams(
+    parsed.data.page,
+    parsed.data.limit
+  );
   const opportunityRepository = AppDataSource.getRepository(Opportunity);
 
   // Build a public query that always keeps unpublished records hidden.
@@ -410,15 +440,13 @@ opportunitiesRouter.get("/api/opportunities", async (req, res) => {
 
   const [opportunities, total] = await query
     .orderBy("opportunity.createdAt", "DESC")
-    .take(limit)
-    .skip((page - 1) * limit)
+    .take(paginationParams.take)
+    .skip(paginationParams.skip)
     .getManyAndCount();
 
   return res.json({
     opportunities: opportunities.map(toPublicOpportunity),
-    total,
-    page,
-    limit,
+    pagination: createPaginationMeta(total, paginationParams),
   });
 });
 
