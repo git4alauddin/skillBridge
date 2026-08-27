@@ -164,12 +164,16 @@ export const BrowsePage = () => {
 
             return (
               <article className="opportunity-card" key={opportunity.id}>
-                <div>
-                  <h3>{opportunity.title}</h3>
-                  <StatusBadge status={opportunity.status} />
-                </div>
+                <div className="opportunity-summary">
+                  <div>
+                    <h3>{opportunity.title}</h3>
+                    <StatusBadge status={opportunity.status} />
+                  </div>
 
-                <p>{opportunity.description}</p>
+                  <p className="opportunity-description">
+                    {opportunity.description}
+                  </p>
+                </div>
 
                 <dl className="details-list">
                   <div>
@@ -188,29 +192,36 @@ export const BrowsePage = () => {
                   </div>
                 </dl>
 
-                <label>
-                  Cover note
-                  <textarea
-                    value={coverNotes[opportunity.id] ?? ""}
-                    onChange={(event) =>
-                      handleCoverNoteChange(opportunity.id, event.target.value)
-                    }
-                    placeholder="Write a short note for the mentor"
-                    rows={4}
-                  />
-                </label>
+                <div className="apply-panel">
+                  <label>
+                    Cover note
+                    <textarea
+                      value={coverNotes[opportunity.id] ?? ""}
+                      onChange={(event) =>
+                        handleCoverNoteChange(
+                          opportunity.id,
+                          event.target.value,
+                        )
+                      }
+                      placeholder="Write a short note for the mentor"
+                      rows={4}
+                    />
+                  </label>
 
-                <button
-                  type="button"
-                  disabled={hasApplied || applyingId === opportunity.id}
-                  onClick={() => void handleApply(opportunity)}
-                >
-                  {hasApplied
-                    ? "Applied"
-                    : applyingId === opportunity.id
-                      ? "Applying..."
-                      : "Apply"}
-                </button>
+                  <div className="card-actions">
+                    <button
+                      type="button"
+                      disabled={hasApplied || applyingId === opportunity.id}
+                      onClick={() => void handleApply(opportunity)}
+                    >
+                      {hasApplied
+                        ? "Applied"
+                        : applyingId === opportunity.id
+                          ? "Applying..."
+                          : "Apply"}
+                    </button>
+                  </div>
+                </div>
               </article>
             );
           })}

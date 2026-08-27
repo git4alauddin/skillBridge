@@ -260,7 +260,14 @@ h3 {
   padding: 20px;
 }
 
-.opportunity-card > div:first-child,
+.opportunity-summary {
+  display: grid;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.opportunity-card > div:first-child:not(.opportunity-summary),
 .application-card > div:first-child {
   display: flex;
   align-items: flex-start;
@@ -268,16 +275,38 @@ h3 {
   gap: 14px;
 }
 
+.opportunity-summary > div:first-child {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: calc(18px * 1.25 * 2);
+}
+
 .opportunity-card h3,
 .application-card h3 {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   font-size: 18px;
   line-height: 1.25;
+  min-height: calc(18px * 1.25 * 2);
 }
 
 .opportunity-card p,
 .application-card p {
   line-height: 1.55;
   overflow-wrap: anywhere;
+}
+
+.opportunity-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--text);
+  min-height: calc(1em * 1.55 * 2);
 }
 
 .details-list + p {
@@ -292,9 +321,13 @@ h3 {
 
 .details-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 0;
+}
+
+.details-list:has(> :nth-child(4)) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .details-list div {
@@ -395,6 +428,32 @@ h3 {
 .pagination-summary span + span {
   color: var(--text);
   font-size: 12px;
+}
+
+.apply-panel {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.apply-panel textarea {
+  min-height: 96px;
+}
+
+.card-actions {
+  display: grid;
+}
+
+.card-actions button {
+  width: 100%;
+}
+
+.card-actions button:disabled {
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  color: var(--text);
+  opacity: 1;
 }
 
 /* Mentor workflows */
@@ -589,6 +648,7 @@ h3 {
   }
 
   .admin-actions button,
+  .card-actions button,
   .pagination-controls button,
   .review-controls button {
     width: 100%;
