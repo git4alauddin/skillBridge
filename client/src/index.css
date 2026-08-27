@@ -477,3 +477,77 @@ h3 {
   background: rgba(34, 197, 94, 0.12);
   color: #bbf7d0;
 }
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-nav {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+
+  .topbar,
+  .page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filter-row,
+  .opportunity-form {
+    grid-template-columns: 1fr;
+  }
+
+  .opportunity-form label,
+  .opportunity-form button {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .sidebar,
+  .topbar,
+  .page-content,
+  .auth-page,
+  .page-status {
+    padding: 18px;
+  }
+
+  .auth-panel,
+  .opportunity-card,
+  .application-card,
+  .metric-card,
+  .opportunity-form {
+    padding: 16px;
+  }
+
+  .opportunity-grid,
+  .metric-grid,
+  .details-list {
+    grid-template-columns: 1fr;
+  }
+
+  .opportunity-card > div:first-child,
+  .application-card > div:first-child {
+    display: grid;
+  }
+
+  .admin-actions button,
+  .review-controls button {
+    width: 100%;
+  }
+
+  .details-list dd,
+  .opportunity-card h3,
+  .application-card h3,
+  .opportunity-card p,
+  .application-card p {
+    overflow-wrap: anywhere;
+  }
+}
