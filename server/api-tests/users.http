@@ -38,7 +38,15 @@ GET http://localhost:4000/api/users
 Authorization: Bearer {{usersStudentToken}}
 
 ### List users as admin
-GET http://localhost:4000/api/users
+GET http://localhost:4000/api/users?page=1&limit=3
+Authorization: Bearer {{usersAdminToken}}
+
+### Reject list users invalid page
+GET http://localhost:4000/api/users?page=0
+Authorization: Bearer {{usersAdminToken}}
+
+### Reject list users invalid limit
+GET http://localhost:4000/api/users?limit=100
 Authorization: Bearer {{usersAdminToken}}
 
 # Update user status

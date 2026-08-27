@@ -5,6 +5,11 @@ import { AppDataSource } from "../data-source.js";
 import { User } from "../entities/User.js";
 import { UserStatus } from "../entities/enums.js";
 import { authenticate, authorize, rolePermissions } from "../middleware/auth.js";
+import {
+  createPaginationMeta,
+  createPaginationQuerySchema,
+  getPaginationParams,
+} from "../utils/pagination.js";
 import { toPublicUser } from "../utils/sanitize.js";
 
 export const usersRouter = Router();
@@ -14,21 +19,42 @@ const updateUserSchema = z.object({
   status: z.enum([UserStatus.Active, UserStatus.Suspended]),
 });
 
+const userListQuerySchema = createPaginationQuerySchema({
+  defaultLimit: 3,
+});
+
 // User management routes
 // List all users for admin management.
 usersRouter.get(
   "/api/users",
   authenticate,
   authorize(...rolePermissions.adminOnly),
-  async (_req, res) => {
+  async (req, res) => {
+    const parsed = userListQuerySchema.safeParse(req.query);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Invalid user filters",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const paginationParams = getPaginationParams(
+      parsed.data.page,
+      parsed.data.limit
+    );
+
     const userRepository = AppDataSource.getRepository(User);
 
-    const users = await userRepository.find({
+    const [users, total] = await userRepository.findAndCount({
       order: { createdAt: "DESC" },
+      skip: paginationParams.skip,
+      take: paginationParams.take,
     });
 
     return res.json({
       users: users.map(toPublicUser),
+      pagination: createPaginationMeta(total, paginationParams),
     });
   }
 );
