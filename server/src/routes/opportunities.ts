@@ -65,7 +65,7 @@ const publicOpportunityListQuerySchema = z.object({
       OpportunityType.Collaboration,
     ])
     .optional(),
-  ...createPaginationQuerySchema({ defaultLimit: 12 }).shape,
+  ...createPaginationQuerySchema({ defaultLimit: 3 }).shape,
 });
 
 const adminOpportunityReviewQuerySchema = z.object({
@@ -79,11 +79,11 @@ const adminOpportunityReviewQuerySchema = z.object({
       OpportunityStatus.Rejected,
     ])
     .default(OpportunityStatus.Pending),
-  ...createPaginationQuerySchema({ defaultLimit: 50 }).shape,
+  ...createPaginationQuerySchema({ defaultLimit: 3 }).shape,
 });
 
 const mentorOpportunityListQuerySchema = createPaginationQuerySchema({
-  defaultLimit: 12,
+  defaultLimit: 3,
 });
 
 // Opportunity routes
