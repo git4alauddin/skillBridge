@@ -91,7 +91,15 @@ Authorization: Bearer {{applicationStudentToken}}
 # Student management
 
 ### List my applications
-GET http://localhost:4000/api/applications
+GET http://localhost:4000/api/applications?page=1&limit=3
+Authorization: Bearer {{applicationStudentToken}}
+
+### Reject list invalid page
+GET http://localhost:4000/api/applications?page=0
+Authorization: Bearer {{applicationStudentToken}}
+
+### Reject list invalid limit
+GET http://localhost:4000/api/applications?limit=100
 Authorization: Bearer {{applicationStudentToken}}
 
 ### Reject list without token
@@ -107,11 +115,11 @@ Authorization: Bearer {{applicationStudentToken}}
 }
 
 ### List applications as mentor
-GET http://localhost:4000/api/applications
+GET http://localhost:4000/api/applications?page=1&limit=3
 Authorization: Bearer {{applicationMentorToken}}
 
 ### List applications as admin
-GET http://localhost:4000/api/applications
+GET http://localhost:4000/api/applications?page=1&limit=3
 Authorization: Bearer {{applicationAdminToken}}
 
 ### Reject status update as student

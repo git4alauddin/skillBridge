@@ -10,6 +10,11 @@ import {
   UserRole,
 } from "../entities/enums.js";
 import { authenticate, authorize, rolePermissions } from "../middleware/auth.js";
+import {
+  createPaginationMeta,
+  createPaginationQuerySchema,
+  getPaginationParams,
+} from "../utils/pagination.js";
 import { toPublicApplication } from "../utils/sanitize.js";
 
 export const applicationsRouter = Router();
@@ -29,6 +34,10 @@ const updateApplicationStatusSchema = z.object({
     ApplicationStatus.Completed,
   ]),
   mentorNote: z.string().trim().max(2000).optional(),
+});
+
+const applicationListQuerySchema = createPaginationQuerySchema({
+  defaultLimit: 3,
 });
 
 // Application routes
@@ -124,6 +133,20 @@ applicationsRouter.get(
       });
     }
 
+    const parsed = applicationListQuerySchema.safeParse(req.query);
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Invalid application filters",
+        errors: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const paginationParams = getPaginationParams(
+      parsed.data.page,
+      parsed.data.limit
+    );
+
     const applicationRepository = AppDataSource.getRepository(Application);
 
     // Choose application visibility by role.
@@ -135,13 +158,15 @@ applicationsRouter.get(
         },
       },
       order: { createdAt: "DESC" as const },
+      skip: paginationParams.skip,
+      take: paginationParams.take,
     };
 
-    const applications =
+    const [applications, total] =
       req.user.role === UserRole.Admin
-        ? await applicationRepository.find(baseFindOptions)
+        ? await applicationRepository.findAndCount(baseFindOptions)
         : req.user.role === UserRole.Mentor
-          ? await applicationRepository.find({
+          ? await applicationRepository.findAndCount({
               ...baseFindOptions,
               where: {
                 opportunity: {
@@ -149,7 +174,7 @@ applicationsRouter.get(
                 },
               },
             })
-          : await applicationRepository.find({
+          : await applicationRepository.findAndCount({
               ...baseFindOptions,
               where: {
                 student: { id: req.user.id },
@@ -158,6 +183,7 @@ applicationsRouter.get(
 
     return res.json({
       applications: applications.map(toPublicApplication),
+      pagination: createPaginationMeta(total, paginationParams),
     });
   }
 );
