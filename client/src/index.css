@@ -379,6 +379,29 @@ h3 {
   justify-self: start;
 }
 
+/* Admin workflows */
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.admin-actions button {
+  min-width: 112px;
+}
+
+.button-danger {
+  background: rgba(239, 68, 68, 0.16);
+  color: #fecaca;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.button-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.26);
+}
+
 /* Auth page */
 .auth-page {
   display: grid;

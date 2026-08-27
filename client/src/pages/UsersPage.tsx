@@ -128,27 +128,30 @@ export const UsersPage = () => {
                   </div>
                 </dl>
 
-                <button
-                  type="button"
-                  disabled={!isSuspended || updatingId === user.id}
-                  onClick={() => void handleStatusChange(user, "active")}
-                >
-                  {updatingId === user.id && isSuspended
-                    ? "Activating..."
-                    : "Activate"}
-                </button>
+                <div className="admin-actions">
+                  <button
+                    type="button"
+                    disabled={!isSuspended || updatingId === user.id}
+                    onClick={() => void handleStatusChange(user, "active")}
+                  >
+                    {updatingId === user.id && isSuspended
+                      ? "Activating..."
+                      : "Activate"}
+                  </button>
 
-                <button
-                  type="button"
-                  disabled={
-                    isSuspended || isCurrentUser || updatingId === user.id
-                  }
-                  onClick={() => void handleStatusChange(user, "suspended")}
-                >
-                  {updatingId === user.id && !isSuspended
-                    ? "Suspending..."
-                    : "Suspend"}
-                </button>
+                  <button
+                    className="button-danger"
+                    type="button"
+                    disabled={
+                      isSuspended || isCurrentUser || updatingId === user.id
+                    }
+                    onClick={() => void handleStatusChange(user, "suspended")}
+                  >
+                    {updatingId === user.id && !isSuspended
+                      ? "Suspending..."
+                      : "Suspend"}
+                  </button>
+                </div>
               </article>
             );
           })}

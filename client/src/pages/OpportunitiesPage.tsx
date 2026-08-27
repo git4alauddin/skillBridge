@@ -235,32 +235,38 @@ export const OpportunitiesPage = () => {
                   </div>
                 </dl>
 
-                <button
-                  type="button"
-                  disabled={
-                    reviewingAction !== null ||
-                    opportunity.status === "published"
-                  }
-                  onClick={() =>
-                    void handleAdminDecision(opportunity, "approve")
-                  }
-                >
-                  {reviewingAction === `${opportunity.id}:approve`
-                    ? "Approving..."
-                    : "Approve"}
-                </button>
+                <div className="admin-actions">
+                  <button
+                    type="button"
+                    disabled={
+                      reviewingAction !== null ||
+                      opportunity.status === "published"
+                    }
+                    onClick={() =>
+                      void handleAdminDecision(opportunity, "approve")
+                    }
+                  >
+                    {reviewingAction === `${opportunity.id}:approve`
+                      ? "Approving..."
+                      : "Approve"}
+                  </button>
 
-                <button
-                  type="button"
-                  disabled={
-                    reviewingAction !== null || opportunity.status === "rejected"
-                  }
-                  onClick={() => void handleAdminDecision(opportunity, "reject")}
-                >
-                  {reviewingAction === `${opportunity.id}:reject`
-                    ? "Rejecting..."
-                    : "Reject"}
-                </button>
+                  <button
+                    className="button-danger"
+                    type="button"
+                    disabled={
+                      reviewingAction !== null ||
+                      opportunity.status === "rejected"
+                    }
+                    onClick={() =>
+                      void handleAdminDecision(opportunity, "reject")
+                    }
+                  >
+                    {reviewingAction === `${opportunity.id}:reject`
+                      ? "Rejecting..."
+                      : "Reject"}
+                  </button>
+                </div>
               </article>
             ))}
           </div>
