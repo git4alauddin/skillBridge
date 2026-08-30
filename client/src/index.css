@@ -274,6 +274,81 @@ h3 {
   line-height: 1;
 }
 
+.dashboard-visual {
+  display: grid;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 22px;
+}
+
+.pipeline-overview,
+.pipeline-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.pipeline-overview > div:first-child,
+.pipeline-card > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pipeline-overview span,
+.pipeline-card span {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.pipeline-overview strong,
+.pipeline-card strong {
+  color: var(--text-strong);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.pipeline-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-muted);
+}
+
+.pipeline-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
+.pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.pipeline-success {
+  background: var(--success) !important;
+}
+
+.pipeline-warning {
+  background: var(--warning) !important;
+}
+
+.pipeline-info {
+  background: var(--info) !important;
+}
+
+.pipeline-danger {
+  background: var(--danger) !important;
+}
+
 /* Workflow cards and lists */
 .filter-row {
   display: grid;
@@ -744,6 +819,7 @@ h3 {
 
   .opportunity-grid,
   .metric-grid,
+  .pipeline-grid,
   .details-list {
     grid-template-columns: 1fr;
   }
