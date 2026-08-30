@@ -1,21 +1,24 @@
 import type { PaginationMeta } from "../types";
 
 type PaginationControlsProps = {
+  alwaysVisible?: boolean;
   isLoading: boolean;
   onPageChange: (page: number) => void;
   pagination: PaginationMeta | null;
 };
 
 export const PaginationControls = ({
+  alwaysVisible = false,
   isLoading,
   onPageChange,
   pagination,
 }: PaginationControlsProps) => {
-  if (!pagination || pagination.totalPages <= 1) {
+  if (!pagination || (!alwaysVisible && pagination.totalPages <= 1)) {
     return null;
   }
 
-  const firstItem = (pagination.page - 1) * pagination.limit + 1;
+  const firstItem =
+    pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
   const lastItem = Math.min(
     pagination.page * pagination.limit,
     pagination.total,

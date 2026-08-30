@@ -128,7 +128,7 @@ export const OpportunitiesPage = () => {
       );
 
       setOpportunities((current) => [response.data.opportunity, ...current]);
-      setSuccessMessage("Opportunity created and sent for admin approval.");
+      setSuccessMessage("Opportunity submitted for admin review.");
       resetForm();
     } catch (createError) {
       setError(apiErrorMessage(createError));
@@ -307,135 +307,151 @@ export const OpportunitiesPage = () => {
   return (
     <main className="page-content">
       <section className="page-panel">
-        <div className="page-heading">
-          <div>
-            <h2>My Listings</h2>
-            <p>Create opportunities and track their approval status.</p>
-          </div>
-        </div>
-
-        {error ? <p className="form-error">{error}</p> : null}
-        {successMessage ? (
-          <p className="form-success">{successMessage}</p>
-        ) : null}
-
-        <form className="opportunity-form" onSubmit={handleSubmit}>
-          <label>
-            Title
-            <input
-              type="text"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              required
-              minLength={4}
-              maxLength={160}
-            />
-          </label>
-
-          <label>
-            Description
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              required
-              minLength={20}
-              rows={5}
-            />
-          </label>
-
-          <label>
-            Type
-            <select
-              value={type}
-              onChange={(event) =>
-                setType(event.target.value as OpportunityType)
-              }
-            >
-              {opportunityTypes.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label>
-            Capacity
-            <input
-              type="number"
-              value={capacity}
-              onChange={(event) => setCapacity(Number(event.target.value))}
-              required
-              min={1}
-              max={500}
-            />
-          </label>
-
-          <label>
-            Deadline
-            <input
-              type="datetime-local"
-              value={deadline}
-              onChange={(event) => setDeadline(event.target.value)}
-              required
-            />
-          </label>
-
-          <label>
-            Start date
-            <input
-              type="datetime-local"
-              value={startDate}
-              onChange={(event) => setStartDate(event.target.value)}
-            />
-          </label>
-
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create opportunity"}
-          </button>
-        </form>
-
-        {isLoading ? <p>Loading opportunities...</p> : null}
-
-        {!isLoading && opportunities.length === 0 ? (
-          <p>No opportunities created yet.</p>
-        ) : null}
-
-        <div className="opportunity-grid">
-          {opportunities.map((opportunity) => (
-            <article className="opportunity-card" key={opportunity.id}>
+        <div className="mentor-listing-layout">
+          <section className="mentor-listings-panel">
+            <div className="page-heading">
               <div>
-                <h3>{opportunity.title}</h3>
-                <StatusBadge status={opportunity.status} />
+                <h2>My Opportunities</h2>
+                <p>
+                  Manage your listings and submit new opportunities for review.
+                </p>
               </div>
+            </div>
 
-              <p>{opportunity.description}</p>
+            {error ? <p className="form-error">{error}</p> : null}
+            {successMessage ? (
+              <p className="form-success">{successMessage}</p>
+            ) : null}
 
-              <dl className="details-list">
-                <div>
-                  <dt>Type</dt>
-                  <dd>{opportunity.type}</dd>
-                </div>
-                <div>
-                  <dt>Capacity</dt>
-                  <dd>{opportunity.capacity}</dd>
-                </div>
-                <div>
-                  <dt>Deadline</dt>
-                  <dd>
-                    {new Date(opportunity.deadline).toLocaleDateString()}
-                  </dd>
-                </div>
-              </dl>
-            </article>
-          ))}
+            {isLoading ? <p>Loading your opportunities...</p> : null}
+
+            {!isLoading && opportunities.length === 0 ? (
+              <p>No opportunities yet. Create your first listing from the form.</p>
+            ) : null}
+
+            <div className="opportunity-grid">
+              {opportunities.map((opportunity) => (
+                <article className="opportunity-card" key={opportunity.id}>
+                  <div>
+                    <h3>{opportunity.title}</h3>
+                    <StatusBadge status={opportunity.status} />
+                  </div>
+
+                  <p>{opportunity.description}</p>
+
+                  <dl className="details-list">
+                    <div>
+                      <dt>Type</dt>
+                      <dd>{opportunity.type}</dd>
+                    </div>
+                    <div>
+                      <dt>Capacity</dt>
+                      <dd>{opportunity.capacity}</dd>
+                    </div>
+                    <div>
+                      <dt>Deadline</dt>
+                      <dd>
+                        {new Date(opportunity.deadline).toLocaleDateString()}
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+
+            <PaginationControls
+              alwaysVisible
+              isLoading={isLoading}
+              pagination={pagination}
+              onPageChange={setPage}
+            />
+          </section>
+
+          <div className="vertical-divider" aria-hidden="true" />
+
+          <aside className="mentor-form-panel">
+            <div className="section-heading">
+              <h3>Create Opportunity</h3>
+              <p>Share the details students need before submitting for review.</p>
+            </div>
+
+            <form className="opportunity-form" onSubmit={handleSubmit}>
+              <label>
+                Title
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  required
+                  minLength={4}
+                  maxLength={160}
+                />
+              </label>
+
+              <label>
+                Description
+                <textarea
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  required
+                  minLength={20}
+                  rows={5}
+                />
+              </label>
+
+              <label>
+                Type
+                <select
+                  value={type}
+                  onChange={(event) =>
+                    setType(event.target.value as OpportunityType)
+                  }
+                >
+                  {opportunityTypes.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Capacity
+                <input
+                  type="number"
+                  value={capacity}
+                  onChange={(event) => setCapacity(Number(event.target.value))}
+                  required
+                  min={1}
+                  max={500}
+                />
+              </label>
+
+              <label>
+                Deadline
+                <input
+                  type="datetime-local"
+                  value={deadline}
+                  onChange={(event) => setDeadline(event.target.value)}
+                  required
+                />
+              </label>
+
+              <label>
+                Start date
+                <input
+                  type="datetime-local"
+                  value={startDate}
+                  onChange={(event) => setStartDate(event.target.value)}
+                />
+              </label>
+
+              <button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit for review"}
+              </button>
+            </form>
+          </aside>
         </div>
-
-        <PaginationControls
-          isLoading={isLoading}
-          pagination={pagination}
-          onPageChange={setPage}
-        />
       </section>
     </main>
   );
