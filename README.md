@@ -382,6 +382,51 @@ Files:
 
 Use these files to test authentication, authorization, opportunity workflows, application workflows, dashboard metrics, pagination, and admin user management.
 
+## Final Feature Checklist
+
+Completed backend scope:
+
+- Express API server is configured with security, CORS, JSON parsing, rate limiting, and fallback error handling.
+- PostgreSQL runs through Docker Compose.
+- TypeORM connects to PostgreSQL and manages the core entities.
+- User registration supports student and mentor accounts.
+- Login returns a JWT for authenticated API access.
+- Current-user lookup returns the authenticated user's public profile.
+- RBAC middleware protects admin, mentor, and student-only routes.
+- Mentors can create opportunities for admin review.
+- Mentors can view and edit only their own opportunities.
+- Admins can approve or reject opportunities.
+- Students can browse only published opportunities.
+- Students can apply before the deadline.
+- Duplicate student applications are rejected.
+- Mentors can review applications for their own opportunities.
+- Application status updates enforce opportunity capacity.
+- Admin, mentor, and student dashboards return role-specific metrics.
+- Opportunity, application, and user list endpoints support pagination.
+
+Completed frontend scope:
+
+- React app runs with Vite.
+- Login and registration pages are available.
+- Auth state is persisted with a local JWT token.
+- Protected routes redirect unauthenticated users.
+- Role-specific navigation is shown in the app shell.
+- Student users can browse and apply to opportunities.
+- Student users can track and withdraw applications.
+- Mentor users can create and monitor listings.
+- Mentor users can review applications.
+- Admin users can review opportunity approvals.
+- Admin users can manage account status.
+- Dashboard pages show metric cards and simple visual summaries by role.
+- List pages use card layouts and pagination controls.
+- The UI is responsive for smaller screens.
+
+Current version boundaries:
+
+- The project is ready for local demo and review.
+- The project is not configured for production deployment.
+- Known gaps are documented below instead of hidden.
+
 ## Verification Checklist
 
 Backend:
