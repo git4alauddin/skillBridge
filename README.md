@@ -1,152 +1,256 @@
 # SkillBridge
 
-SkillBridge is a role-based project and internship opportunity management platform.
+SkillBridge is a full-stack role-based project and internship opportunity management platform.
 
-## Project Goal
+It helps students, mentors, recruiters, and administrators manage academic projects, internships, research tasks, hackathon openings, and collaboration opportunities in one organized place.
 
-The goal of SkillBridge is to help students, mentors/recruiters, and administrators manage academic projects, internships, research tasks, hackathon openings, and collaboration opportunities in one organized place.
+## Project Overview
 
-## Roles
+SkillBridge replaces informal opportunity sharing through messages, notice boards, and scattered communication channels with a structured workflow:
 
-- Admin
-- Mentor / Recruiter
-- Student
+```text
+Mentor creates opportunity
+Admin approves or rejects it
+Student browses published opportunities
+Student applies before the deadline
+Mentor reviews applications
+Dashboard metrics update by role
+```
 
-## Planned Tech Stack
+## User Roles
 
-- React
+- Admin: reviews opportunities, manages users, views all applications, and monitors platform metrics.
+- Mentor / Recruiter: creates opportunities, manages their own listings, and reviews applications for their listings.
+- Student: browses published opportunities, applies, tracks application status, and withdraws applications.
+
+Public registration supports only student and mentor accounts. Admin accounts must be created directly in the database for local development.
+
+## Features
+
+Backend:
+
+- Express API server with TypeScript.
+- PostgreSQL database through Docker Compose.
+- TypeORM entities and relationships.
+- JWT authentication.
+- Password hashing with bcrypt.
+- Role-based authorization middleware.
+- Opportunity approval workflow.
+- Student application workflow.
+- Mentor ownership checks.
+- Application capacity checks.
+- Role-specific dashboard metrics.
+- Paginated list endpoints.
+- Manual HTTP API tests.
+
+Frontend:
+
+- React + TypeScript + Vite app.
+- Login and registration pages.
+- Auth state persisted in local storage.
+- Protected routes by role.
+- Student opportunity browsing and application flow.
+- Mentor listings and application review flow.
+- Admin approvals and user management flow.
+- Role-specific dashboards with metric cards and visual summaries.
+- Pagination controls for list pages.
+- Responsive card-based UI.
+
+## Tech Stack
+
+Backend:
+
+- Node.js
 - Express
+- TypeScript
 - PostgreSQL
 - TypeORM
 - JWT
+- bcryptjs
+- Zod
 
-## Development Status
+Frontend:
 
-This project is being built step by step as a learning-by-doing full-stack application.
+- React
+- TypeScript
+- Vite
+- React Router
+- Axios
+- Lucide React
+- CSS
 
-## Current Backend Features
+Infrastructure:
 
-- Express API server.
-- PostgreSQL database through Docker Compose.
-- TypeORM entity models.
-- JWT authentication.
-- Role-based authorization middleware.
-- Manual HTTP API tests.
-- Health and readiness checks.
+- npm
+- Docker Compose
+- PostgreSQL 16
 
-## Backend Architecture
+## Folder Structure
+
+```text
+skillBridge/
+  README.md
+  .gitignore
+  docker-compose.yml
+
+  server/
+    package.json
+    tsconfig.json
+    .env.example
+    api-tests/
+    src/
+
+  client/
+    package.json
+    vite.config.ts
+    index.html
+    src/
+```
+
+Planning and implementation notes live outside the app repo:
+
+```text
+app-dev-proj/docs/
+app-dev-proj/docs/implementation-log/
+```
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  subgraph client["Manual and client access"]
-    http["auth.http<br/>manual API tests"]
-    browser["Browser / future frontend"]
+  subgraph users["User Layer"]
+    admin["Admin"]
+    mentor["Mentor / Recruiter"]
+    student["Student"]
   end
 
-  subgraph server["Server entry"]
-    index["index.ts<br/>start backend"]
-    app["app.ts<br/>configure Express"]
+  subgraph frontend["Frontend"]
+    react["React app"]
+    router["React Router<br/>protected routes"]
+    authState["Auth state<br/>local storage token"]
+    apiClient["Axios API client<br/>JWT bearer token"]
   end
 
-  subgraph middleware["Global middleware"]
-    helmet["helmet"]
-    cors["cors"]
-    json["express.json"]
-    limit["rateLimit"]
+  subgraph backend["Backend API"]
+    express["Express app"]
+    middleware["Global middleware<br/>helmet, cors, json, rate limit"]
+    auth["Auth + RBAC middleware<br/>JWT verification and role checks"]
+    validation["Zod validation"]
+    routes["Route modules<br/>auth, users, opportunities,<br/>applications, dashboard"]
   end
 
-  subgraph routes["Routes"]
-    healthRoute["health.ts"]
-    authRoute["auth.ts"]
-
-    health["GET /health"]
-    ready["GET /ready"]
-    register["POST /api/auth/register"]
-    login["POST /api/auth/login"]
-    me["GET /api/auth/me"]
-    adminCheck["GET /api/auth/admin-check"]
+  subgraph data["Data Layer"]
+    repositories["TypeORM repositories"]
+    entities["Entities<br/>User, Category, Opportunity,<br/>Application, UploadedFile, AuditLog"]
+    postgres[("PostgreSQL<br/>Docker Compose")]
   end
 
-  subgraph auth["Authentication and authorization"]
-    requestUser["Express req.user typing"]
-    requireAuth["requireAuth / authenticate"]
-    authorize["authorize"]
-    permissions["rolePermissions"]
-  end
+  admin --> react
+  mentor --> react
+  student --> react
 
-  subgraph utils["Utilities"]
-    security["security.ts<br/>password + JWT helpers"]
-    sanitize["sanitize.ts<br/>public response shapes"]
-  end
+  react --> router
+  router --> authState
+  authState --> apiClient
+  apiClient --> express
 
-  subgraph data["Data access"]
-    source["data-source.ts<br/>TypeORM DataSource"]
-    repos["TypeORM repositories"]
-    entities["entities/*"]
-  end
+  express --> middleware
+  middleware --> auth
+  auth --> validation
+  validation --> routes
+  routes --> repositories
+  repositories --> entities
+  entities --> postgres
 
-  subgraph db["Database runtime"]
-    postgres[("PostgreSQL")]
-    compose["docker-compose.yml"]
-  end
+  routes --> authRoutes["Auth<br/>register, login, me"]
+  routes --> opportunityRoutes["Opportunities<br/>create, approve, browse"]
+  routes --> applicationRoutes["Applications<br/>apply, review, withdraw"]
+  routes --> dashboardRoutes["Dashboards<br/>role metrics"]
+  routes --> userRoutes["Users<br/>admin management"]
 
-  http --> app
-  browser --> app
-  index --> app
+  classDef userLayer fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+  classDef frontendLayer fill:#dcfce7,stroke:#16a34a,color:#14532d
+  classDef backendLayer fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef dataLayer fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
 
-  app --> helmet --> cors --> json --> limit
-  limit --> healthRoute
-  limit --> authRoute
-
-  healthRoute --> health
-  healthRoute --> ready
-  authRoute --> register
-  authRoute --> login
-  authRoute --> me
-  authRoute --> adminCheck
-
-  me --> requireAuth
-  adminCheck --> requireAuth --> authorize --> permissions
-  requireAuth --> requestUser
-
-  register --> security
-  login --> security
-  requireAuth --> security
-  register --> sanitize
-  login --> sanitize
-  me --> sanitize
-
-  ready --> source
-  register --> repos
-  login --> repos
-  requireAuth --> repos
-  repos --> source --> entities --> postgres
-  compose --> postgres
-
-  classDef clientNode fill:#dbeafe,stroke:#1d4ed8,color:#1e3a8a
-  classDef serverNode fill:#dcfce7,stroke:#15803d,color:#14532d
-  classDef middlewareNode fill:#fef3c7,stroke:#b45309,color:#78350f
-  classDef routeNode fill:#fce7f3,stroke:#be185d,color:#831843
-  classDef authNode fill:#f3e8ff,stroke:#7e22ce,color:#581c87
-  classDef utilityNode fill:#ccfbf1,stroke:#0f766e,color:#134e4a
-  classDef dataNode fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d
-
-  class http,browser clientNode
-  class index,app serverNode
-  class helmet,cors,json,limit middlewareNode
-  class healthRoute,authRoute,health,ready,register,login,me,adminCheck routeNode
-  class requestUser,requireAuth,authorize,permissions authNode
-  class security,sanitize utilityNode
-  class source,repos,entities,postgres,compose dataNode
+  class admin,mentor,student userLayer
+  class react,router,authState,apiClient frontendLayer
+  class express,middleware,auth,validation,routes,authRoutes,opportunityRoutes,applicationRoutes,dashboardRoutes,userRoutes backendLayer
+  class repositories,entities,postgres dataLayer
 ```
 
-## Backend Setup
+## Environment Variables
 
-Start PostgreSQL from the project root:
+Backend variables are documented in:
+
+```text
+server/.env.example
+```
+
+Create a local backend env file:
 
 ```powershell
+copy server\.env.example server\.env
+```
+
+Default backend values:
+
+```env
+NODE_ENV=development
+PORT=4000
+CLIENT_ORIGIN=http://localhost:5173
+
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=postgres
+DATABASE_NAME=skillbridge
+DATABASE_SSL=false
+TYPEORM_SYNCHRONIZE=true
+
+JWT_SECRET=replace-this-with-a-long-random-secret
+JWT_EXPIRES_IN=1d
+```
+
+Frontend API URL is optional because the app defaults to:
+
+```env
+VITE_API_URL=http://localhost:4000/api
+```
+
+## Setup Instructions
+
+Run these commands from the `skillBridge/` directory unless a step says otherwise.
+
+Install backend dependencies:
+
+```powershell
+cd server
+npm install
+```
+
+Install frontend dependencies:
+
+```powershell
+cd ..\client
+npm install
+```
+
+Create backend environment file:
+
+```powershell
+cd ..\server
+copy .env.example .env
+```
+
+Start PostgreSQL:
+
+```powershell
+cd ..
 docker compose up -d postgres
 ```
+
+## Running the Project
 
 Start the backend:
 
@@ -155,43 +259,194 @@ cd server
 npm run dev
 ```
 
-Build the backend:
+Start the frontend in another terminal:
 
 ```powershell
-cd server
-npm run build
+cd client
+npm run dev
 ```
 
-## Service Checks
-
-Liveness check:
+Expected local URLs:
 
 ```text
-GET http://localhost:4000/health
+Frontend: http://localhost:5173
+Backend:  http://localhost:4000
+Health:   http://localhost:4000/health
+Ready:    http://localhost:4000/ready
 ```
 
-This confirms the Express server is running.
+## Default Admin Account
 
-Readiness check:
+There is no public admin registration route. This is intentional.
+
+For local testing, create an admin account with the SQL block documented in:
 
 ```text
-GET http://localhost:4000/ready
+server/api-tests/rbac.http
 ```
 
-This confirms the backend can reach the database.
+The manual RBAC fixture uses:
+
+```text
+Email:    rbac-admin@example.com
+Password: Password123
+```
+
+This account is for local development only.
+
+## API Overview
+
+Health:
+
+- `GET /health`
+- `GET /ready`
+
+Auth:
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `GET /api/auth/admin-check`
+
+Opportunities:
+
+- `GET /api/opportunities`
+- `GET /api/opportunities/:id`
+- `POST /api/opportunities`
+- `GET /api/opportunities/mine`
+- `PATCH /api/opportunities/:id`
+- `GET /api/opportunities/admin/review`
+- `POST /api/opportunities/:id/approve`
+- `POST /api/opportunities/:id/reject`
+
+Applications:
+
+- `POST /api/opportunities/:id/apply`
+- `GET /api/applications`
+- `PATCH /api/applications/:id/status`
+- `POST /api/applications/:id/withdraw`
+
+Dashboard:
+
+- `GET /api/dashboard`
+
+Users:
+
+- `GET /api/users`
+- `PATCH /api/users/:id`
+
+## Main Workflows
+
+Admin workflow:
+
+1. Log in with a database-created admin account.
+2. Open the dashboard to review platform metrics.
+3. Open opportunities to approve or reject pending listings.
+4. Open users to activate or suspend accounts.
+5. Open applications to view submitted applications across the platform.
+
+Mentor workflow:
+
+1. Register or log in as a mentor.
+2. Create an opportunity from the mentor listings page.
+3. Track created listings and approval status.
+4. Review applications for owned opportunities.
+5. Update application status as shortlisted, selected, rejected, waitlisted, or completed.
+
+Student workflow:
+
+1. Register or log in as a student.
+2. Browse published opportunities.
+3. Search and filter opportunities.
+4. Apply before the deadline.
+5. Track application status.
+6. Withdraw an application when needed.
 
 ## Manual API Tests
 
 Manual backend checks live in:
 
 ```text
-server/api-tests/auth.http
+server/api-tests/*.http
 ```
 
-Use this file to test:
+Files:
 
-- Registration.
-- Login.
-- Current-user lookup.
-- Missing and invalid token handling.
-- Role-based admin route protection.
+- `health.http`
+- `auth.http`
+- `rbac.http`
+- `opportunities.http`
+- `applications.http`
+- `dashboard.http`
+- `users.http`
+
+Use these files to test authentication, authorization, opportunity workflows, application workflows, dashboard metrics, pagination, and admin user management.
+
+## Verification Checklist
+
+Backend:
+
+- `docker compose up -d postgres` starts PostgreSQL.
+- `npm run build` passes from `server/`.
+- `GET /health` returns the service status.
+- `GET /ready` confirms database access.
+- Registration and login work.
+- JWT-protected routes reject missing and invalid tokens.
+- Role-protected routes reject the wrong role.
+- Mentor ownership checks work.
+- Student duplicate application checks work.
+- Capacity validation works when selecting students.
+
+Frontend:
+
+- `npm run build` passes from `client/`.
+- `npm run lint` passes from `client/`.
+- Login and register pages work.
+- Authenticated routes redirect correctly.
+- Student browse/apply flow works.
+- Mentor listing/review flow works.
+- Admin approval/user-management flow works.
+- Dashboard metric cards and visual summaries render by role.
+- Pagination controls work on list pages.
+- Mobile layout remains usable.
+
+## Build Commands
+
+Backend:
+
+```powershell
+cd server
+npm run build
+```
+
+Frontend:
+
+```powershell
+cd client
+npm run build
+npm run lint
+```
+
+## Known Limitations
+
+- Admin accounts are created manually in the database for local testing.
+- Category management UI is not implemented.
+- File upload UI and resume attachment workflow are not implemented.
+- No password reset flow.
+- No email notifications.
+- No production deployment configuration.
+- Local TypeORM synchronization is used for development.
+- Analytics are limited to dashboard counts and simple visual summaries.
+- Manual HTTP files are used instead of an automated integration test suite.
+
+## Future Improvements
+
+- Add admin category management.
+- Add resume/supporting document uploads.
+- Add seed scripts for repeatable demo data.
+- Add automated backend integration tests.
+- Add password reset and email notifications.
+- Add audit log viewer for admins.
+- Add richer search and sorting controls.
+- Add production deployment configuration.
+- Add cloud file storage for uploads.
