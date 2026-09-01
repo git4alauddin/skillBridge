@@ -181,7 +181,7 @@ export const OpportunitiesPage = () => {
         <section className="page-panel">
           <div className="page-heading">
             <div>
-              <h2>Approvals</h2>
+              <h2>Opportunity Approvals</h2>
               <p>Review opportunities before they appear in public browsing.</p>
             </div>
           </div>
@@ -210,10 +210,14 @@ export const OpportunitiesPage = () => {
             </select>
           </label>
 
-          {isLoading ? <p>Loading opportunities...</p> : null}
+          {isLoading ? (
+            <p className="loading-state">Loading opportunities for review...</p>
+          ) : null}
 
           {!isLoading && opportunities.length === 0 ? (
-            <p>No opportunities found for this review filter.</p>
+            <p className="empty-state">
+              No opportunities match this review status.
+            </p>
           ) : null}
 
           <div className="opportunity-grid">
@@ -323,10 +327,14 @@ export const OpportunitiesPage = () => {
               <p className="form-success">{successMessage}</p>
             ) : null}
 
-            {isLoading ? <p>Loading your opportunities...</p> : null}
+            {isLoading ? (
+              <p className="loading-state">Loading your opportunities...</p>
+            ) : null}
 
             {!isLoading && opportunities.length === 0 ? (
-              <p>No opportunities yet. Create your first listing from the form.</p>
+              <p className="empty-state">
+                No opportunities yet. Create your first listing from the form.
+              </p>
             ) : null}
 
             <div className="opportunity-grid">

@@ -77,6 +77,10 @@ const percentage = (value: number, total: number) => {
   return total === 0 ? 0 : Math.min(100, Math.round((value / total) * 100));
 };
 
+const formatRoleLabel = (role: string) => {
+  return `${role.charAt(0).toUpperCase()}${role.slice(1)} overview`;
+};
+
 const DashboardVisual = ({
   description,
   items,
@@ -229,7 +233,7 @@ export const DashboardPage = () => {
         <div className="page-heading">
           <div>
             <h2>Dashboard</h2>
-            <p>{dashboard.role} overview</p>
+            <p>{formatRoleLabel(dashboard.role)}</p>
           </div>
         </div>
         <MetricGrid metrics={dashboard.metrics} />

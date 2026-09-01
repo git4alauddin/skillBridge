@@ -152,10 +152,14 @@ export const BrowsePage = () => {
           <p className="form-success">{successMessage}</p>
         ) : null}
 
-        {isLoading ? <p>Loading opportunities...</p> : null}
+        {isLoading ? (
+          <p className="loading-state">Loading opportunities...</p>
+        ) : null}
 
         {!isLoading && opportunities.length === 0 ? (
-          <p>No published opportunities found.</p>
+          <p className="empty-state">
+            No published opportunities match your current filters.
+          </p>
         ) : null}
 
         <div className="opportunity-grid">

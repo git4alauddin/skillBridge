@@ -98,7 +98,7 @@ export const UsersPage = () => {
       <section className="page-panel">
         <div className="page-heading">
           <div>
-            <h2>Users</h2>
+            <h2>User Management</h2>
             <p>Manage account access for students, mentors, and admins.</p>
           </div>
         </div>
@@ -108,9 +108,13 @@ export const UsersPage = () => {
           <p className="form-success">{successMessage}</p>
         ) : null}
 
-        {isLoading ? <p>Loading users...</p> : null}
+        {isLoading ? (
+          <p className="loading-state">Loading user accounts...</p>
+        ) : null}
 
-        {!isLoading && users.length === 0 ? <p>No users found.</p> : null}
+        {!isLoading && users.length === 0 ? (
+          <p className="empty-state">No user accounts found.</p>
+        ) : null}
 
         <div className="application-list">
           {users.map((user) => {

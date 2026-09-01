@@ -25,8 +25,26 @@ const defaultReviewStatus = (status: ApplicationStatus): ApplicationStatus =>
 
 const pageSize = 3;
 
+const applicationPageCopy = {
+  admin: {
+    description: "Review submitted applications across the platform.",
+    empty: "No applications have been submitted yet.",
+  },
+  mentor: {
+    description: "Review applications for your opportunities.",
+    empty: "No applications have been submitted to your opportunities yet.",
+  },
+  student: {
+    description: "Track your submitted applications and review status.",
+    empty: "You have not applied to any opportunities yet.",
+  },
+} as const;
+
 export const ApplicationsPage = () => {
   const { user } = useAuth();
+  const pageCopy =
+    applicationPageCopy[user?.role as keyof typeof applicationPageCopy] ??
+    applicationPageCopy.student;
 
   const [applications, setApplications] = useState<Application[]>([]);
   const [page, setPage] = useState(1);
@@ -148,11 +166,7 @@ export const ApplicationsPage = () => {
         <div className="page-heading">
           <div>
             <h2>Applications</h2>
-            <p>
-              {user?.role === "mentor"
-                ? "Review applications for your opportunities."
-                : "Track submitted applications and their review status."}
-            </p>
+            <p>{pageCopy.description}</p>
           </div>
         </div>
 
@@ -161,10 +175,10 @@ export const ApplicationsPage = () => {
           <p className="form-success">{successMessage}</p>
         ) : null}
 
-        {isLoading ? <p>Loading applications...</p> : null}
+        {isLoading ? <p className="loading-state">Loading applications...</p> : null}
 
         {!isLoading && applications.length === 0 ? (
-          <p>No applications found.</p>
+          <p className="empty-state">{pageCopy.empty}</p>
         ) : null}
 
         <div className="application-list">
