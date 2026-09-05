@@ -50,22 +50,32 @@ Public registration supports student and mentor accounts only. Admin accounts ar
 
 ```text
 skillBridge/
-  README.md
-  .gitignore
-  docker-compose.yml
+  README.md                  # Project overview and setup guide
+  docker-compose.yml          # Local PostgreSQL service
+  ai_usage.md                 # AI usage declaration
 
   server/
-    package.json
-    tsconfig.json
-    .env.example
-    api-tests/
+    package.json              # Backend scripts and dependencies
+    .env.example              # Backend environment variable template
+    api-tests/                # Manual HTTP API test files
     src/
+      routes/                 # Auth, users, opportunities, applications, dashboard
+      middleware/             # Authentication, authorization, and error handling
+      entities/               # TypeORM database models
+      utils/                  # Security, sanitization, and pagination helpers
+      app.ts                  # Express app configuration
+      index.ts                # Backend startup entry point
 
   client/
-    package.json
-    vite.config.ts
-    index.html
+    package.json              # Frontend scripts and dependencies
+    vite.config.ts            # Vite configuration
     src/
+      pages/                  # Route-level React pages
+      components/             # Shared UI components
+      state/                  # Auth context, provider, and hook
+      api.ts                  # Axios API client
+      types.ts                # Shared frontend TypeScript types
+      index.css               # Global styling and responsive layout
 ```
 
 ## Architecture
